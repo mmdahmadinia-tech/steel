@@ -1,20 +1,20 @@
 @echo off
 REM ============================================
-REM STEELMETRICS - Open Built Version Directly
-REM No server needed - just opens the HTML file
+REM STEELMETRICS - Open Application
 REM ============================================
 
 cd /d "%~dp0"
 
 echo.
 echo ================================================
-echo   STEELMETRICS - Quick Open
+echo   STEELMETRICS - Open Application
 echo ================================================
 echo.
 
 REM Check if dist folder exists
 if not exist "dist\" (
-    echo [INFO] Building production version first...
+    echo [INFO] dist folder not found.
+    echo [INFO] Building application first...
     echo.
     call npm run build
     if %errorlevel% neq 0 (
@@ -25,18 +25,26 @@ if not exist "dist\" (
         exit /b 1
     )
     echo.
-    echo [OK] Build completed.
+    echo [OK] Build completed successfully.
     echo.
+)
+
+REM Check if index.html exists
+if not exist "dist\index.html" (
+    echo [ERROR] dist\index.html not found!
+    echo.
+    echo Please run build.bat first.
+    echo.
+    pause
+    exit /b 1
 )
 
 echo [OK] Opening application...
 echo.
-echo If browser doesn't open automatically,
-echo manually open this file:
-echo %cd%\dist\index.html
+echo File: %cd%\dist\index.html
 echo.
 
-REM Open the HTML file
+REM Open the HTML file directly
 start "" "%cd%\dist\index.html"
 
 echo.
