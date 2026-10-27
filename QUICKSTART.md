@@ -1,128 +1,99 @@
-# 🚀 Quick Start Guide - STEELMETRICS
+# 🚀 STEELMETRICS - راهنمای سریع شروع
 
-## 📦 BAT Files Created:
+## 📦 فایل‌های BAT:
 
-### 1️⃣ `install.bat` - Initial Setup
-- Checks Node.js and npm
-- Installs dependencies automatically
-- **Run this first**
+### 1️⃣ **debug.bat** - عیب‌یابی
+- بررسی نصب Node.js و npm
+- نمایش اطلاعات سیستم
+- **اول این را اجرا کنید**
 
-### 2️⃣ `start.bat` - Development Server
-- Starts server on http://localhost:3000
-- Opens browser automatically
-- Shows demo users
-- **For testing and development**
+### 2️⃣ **install.bat** - نصب اولیه
+- نصب وابستگی‌ها
+- **فقط بار اول اجرا کنید**
 
-### 3️⃣ `build.bat` - Production Build
-- Builds optimized files in dist/ folder
-- **For final deployment**
+### 3️⃣ **open.bat** - باز کردن سریع (پیشنهادی)
+- مستقیماً برنامه را باز می‌کند
+- نیازی به سرور ندارد
+- **ساده‌ترین روش**
 
-### 4️⃣ `test.bat` - Quick Test
-- Opens the built version directly
-- Uses preview server or opens HTML file
-- **For quick testing without dev server**
+### 4️⃣ **start.bat** - سرور توسعه
+- اجرای سرور روی localhost:3000
+- برای توسعه و تست
 
----
-
-## 🎯 How to Run on Your System:
-
-### Step 1: Install Node.js
-If you don't have it: https://nodejs.org (LTS version 20.x)
-
-### Step 2: Run install.bat
-```
-Double-click install.bat
-Wait for dependencies to install
-```
-
-### Step 3: Run start.bat
-```
-Double-click start.bat
-Browser opens automatically
-```
-
-### Step 4: Login
-```
-Username: admin
-Password: anything (demo mode)
-```
+### 5️⃣ **build.bat** - ساخت نسخه نهایی
+- ساخت فایل‌های بهینه
 
 ---
 
-## 👥 Demo Users:
+## 🎯 مراحل اجرا:
 
-| Username | Role |
-|----------|------|
-| admin | System Admin (full access) |
-| eaf_operator | EAF User |
-| lf_operator | LF User |
-| ccm_operator | CCM User |
-| shift_sup | Shift Supervisor |
-| prod_manager | Production Manager |
-
-**Password:** Enter anything (demo mode)
-
----
-
-## 📁 Documentation Files:
-
-- **README.md** - Complete project guide
-- **QUICKSTART.md** - Quick start guide (this file)
-- **DEPLOYMENT.md** - Production deployment guide
-- **.env.example** - Environment configuration sample
-- **.gitignore** - Git ignore file
-
----
-
-## 🌐 URLs:
-
-- **Development:** http://localhost:3000
-- **Production:** https://steelmetrics.ir
-
----
-
-## ⚠️ Important Notes:
-
-1. **Demo Mode:** This is Frontend only with sample data
-2. **Backend:** Real backend needs to be implemented
-3. **Database:** PostgreSQL required for production
-4. **Security:** HTTPS and security settings required for production
-
----
-
-## 🆘 Troubleshooting:
-
-### Port 3000 is busy:
-```cmd
-netstat -ano | findstr :3000
-taskkill /PID [PID] /F
+### روش ۱: ساده‌ترین (پیشنهادی)
+```
+1. دابل‌کلیک روی open.bat
+2. مرورگر خودکار باز می‌شود
+3. تمام!
 ```
 
-### npm install error:
+### روش ۲: سرور توسعه
+```
+1. دابل‌کلیک روی install.bat (بار اول)
+2. دابل‌کلیک روی start.bat
+3. مرورگر باز می‌شود
+```
+
+### اگر کار نکرد:
+```
+1. دابل‌کلیک روی debug.bat
+2. خروجی را ببینید
+3. مشکل را پیدا کنید
+```
+
+---
+
+## 👥 کاربران آزمایشی:
+
+| نام کاربری | نقش |
+|------------|-----|
+| admin | مدیر سامانه |
+| eaf_operator | کاربر EAF |
+| lf_operator | کاربر LF |
+| ccm_operator | کاربر CCM |
+| shift_sup | سرپرست شیفت |
+| prod_manager | مدیر تولید |
+
+**رمز عبور:** هر چیزی وارد کنید
+
+---
+
+## ⚠️ اگر مشکل دارید:
+
+### Node.js نصب نیست:
+1. به https://nodejs.org بروید
+2. نسخه LTS (20.x) را دانلود کنید
+3. نصب کنید
+4. **کامپیوتر را ری‌استارت کنید**
+5. دوباره تلاش کنید
+
+### CMD سریع بسته می‌شود:
+- فایل debug.bat را اجرا کنید
+- خروجی را ببینید
+- مشکل را پیدا کنید
+
+### خطای npm:
 ```cmd
 npm cache clean --force
 rmdir /s /q node_modules
 npm install
 ```
 
-### Browser doesn't open:
-- Manually open: http://localhost:3000
-- Check antivirus firewall
-
-### "npm not found" error:
-- Make sure Node.js is installed
-- Restart your computer after installing Node.js
-- Run the bat file as Administrator if needed
-
 ---
 
-## 📞 Support:
+## 📞 پشتیبانی:
 
 - Email: support@steelmetrics.ir
 - Website: https://steelmetrics.ir
 
 ---
 
-**Version:** 1.0.0  
-**Date:** 1403  
-**Domain:** steelmetrics.ir
+**نسخه:** 1.0.0  
+**دامنه:** steelmetrics.ir
