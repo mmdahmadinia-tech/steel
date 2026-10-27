@@ -1,111 +1,128 @@
-# 🚀 راهنمای سریع شروع - STEELMETRICS
+# 🚀 Quick Start Guide - STEELMETRICS
 
-## 📦 فایل‌های BAT ایجاد شده:
+## 📦 BAT Files Created:
 
-### 1️⃣ `install.bat` - نصب اولیه
-- بررسی Node.js و npm
-- نصب خودکار وابستگی‌ها
-- **اولین بار اجرا کنید**
+### 1️⃣ `install.bat` - Initial Setup
+- Checks Node.js and npm
+- Installs dependencies automatically
+- **Run this first**
 
-### 2️⃣ `start.bat` - اجرای سرور توسعه
-- راه‌اندازی سرور روی http://localhost:3000
-- باز کردن خودکار مرورگر
-- **برای تست و توسعه**
+### 2️⃣ `start.bat` - Development Server
+- Starts server on http://localhost:3000
+- Opens browser automatically
+- Shows demo users
+- **For testing and development**
 
-### 3️⃣ `build.bat` - ساخت نسخه Production
-- ساخت فایل‌های بهینه‌شده در پوشه dist/
-- **برای استقرار نهایی**
+### 3️⃣ `build.bat` - Production Build
+- Builds optimized files in dist/ folder
+- **For final deployment**
 
----
-
-## 🎯 مراحل اجرا:
-
-### قدم اول: نصب Node.js
-اگر ندارید از https://nodejs.org نسخه LTS را دانلود و نصب کنید
-
-### قدم دوم: اجرای install.bat
-```
-دابل‌کلیک روی install.bat
-صبر کنید تا نصب تمام شود
-```
-
-### قدم سوم: اجرای start.bat
-```
-دابل‌کلیک روی start.bat
-مرورگر خودکار باز می‌شود
-```
-
-### قدم چهارم: ورود به سامانه
-```
-نام کاربری: admin
-رمز عبور: هر چیزی (demo mode)
-```
+### 4️⃣ `test.bat` - Quick Test
+- Opens the built version directly
+- Uses preview server or opens HTML file
+- **For quick testing without dev server**
 
 ---
 
-## 👥 کاربران آزمایشی:
+## 🎯 How to Run on Your System:
 
-| نام کاربری | نقش |
-|------------|-----|
-| admin | مدیر سامانه (دسترسی کامل) |
-| eaf_operator | کاربر کوره قوس الکتریکی |
-| lf_operator | کاربر کوره پاتیلی |
-| ccm_operator | کاربر ریخته‌گری مداوم |
-| shift_sup | سرپرست شیفت |
-| prod_manager | مدیر تولید |
+### Step 1: Install Node.js
+If you don't have it: https://nodejs.org (LTS version 20.x)
 
-**رمز عبور:** هر مقداری وارد کنید
+### Step 2: Run install.bat
+```
+Double-click install.bat
+Wait for dependencies to install
+```
+
+### Step 3: Run start.bat
+```
+Double-click start.bat
+Browser opens automatically
+```
+
+### Step 4: Login
+```
+Username: admin
+Password: anything (demo mode)
+```
 
 ---
 
-## 📁 فایل‌های مستندات:
+## 👥 Demo Users:
 
-- **README.md** - راهنمای کامل پروژه
-- **DEPLOYMENT.md** - راهنمای استقرار Production
-- **.env.example** - نمونه تنظیمات محیطی
+| Username | Role |
+|----------|------|
+| admin | System Admin (full access) |
+| eaf_operator | EAF User |
+| lf_operator | LF User |
+| ccm_operator | CCM User |
+| shift_sup | Shift Supervisor |
+| prod_manager | Production Manager |
+
+**Password:** Enter anything (demo mode)
 
 ---
 
-## 🌐 آدرس‌ها:
+## 📁 Documentation Files:
 
-- **توسعه:** http://localhost:3000
+- **README.md** - Complete project guide
+- **QUICKSTART.md** - Quick start guide (this file)
+- **DEPLOYMENT.md** - Production deployment guide
+- **.env.example** - Environment configuration sample
+- **.gitignore** - Git ignore file
+
+---
+
+## 🌐 URLs:
+
+- **Development:** http://localhost:3000
 - **Production:** https://steelmetrics.ir
 
 ---
 
-## ⚠️ نکات مهم:
+## ⚠️ Important Notes:
 
-1. **حالت نمایشی:** این نسخه Frontend است و داده‌ها نمونه هستند
-2. **Backend:** برای استفاده واقعی باید Backend پیاده‌سازی شود
-3. **پایگاه داده:** PostgreSQL برای Production نیاز است
-4. **امنیت:** HTTPS و تنظیمات امنیتی برای Production الزامی است
+1. **Demo Mode:** This is Frontend only with sample data
+2. **Backend:** Real backend needs to be implemented
+3. **Database:** PostgreSQL required for production
+4. **Security:** HTTPS and security settings required for production
 
 ---
 
-## 🆘 رفع مشکلات:
+## 🆘 Troubleshooting:
 
-### پورت 3000 اشغال است:
+### Port 3000 is busy:
 ```cmd
 netstat -ano | findstr :3000
 taskkill /PID [PID] /F
 ```
 
-### خطای npm install:
+### npm install error:
 ```cmd
 npm cache clean --force
 rmdir /s /q node_modules
 npm install
 ```
 
+### Browser doesn't open:
+- Manually open: http://localhost:3000
+- Check antivirus firewall
+
+### "npm not found" error:
+- Make sure Node.js is installed
+- Restart your computer after installing Node.js
+- Run the bat file as Administrator if needed
+
 ---
 
-## 📞 پشتیبانی:
+## 📞 Support:
 
-- ایمیل: support@steelmetrics.ir
-- وب‌سایت: https://steelmetrics.ir
+- Email: support@steelmetrics.ir
+- Website: https://steelmetrics.ir
 
 ---
 
-**نسخه:** 1.0.0  
-**تاریخ:** 1403  
-**دامنه:** steelmetrics.ir
+**Version:** 1.0.0  
+**Date:** 1403  
+**Domain:** steelmetrics.ir
