@@ -1,10 +1,10 @@
 export interface User {
   id: string;
   username: string;
+  password: string;
   fullName: string;
-  role: 'admin' | 'eaf_user' | 'lf_user' | 'ccm_user' | 'shift_supervisor' | 'production_manager' | 'analyst' | 'it_admin';
+  role: 'admin' | 'eaf_user' | 'lf_user' | 'ccm_user' | 'analyst';
   isActive: boolean;
-  permissions: string[];
   unitAccess: ('EAF' | 'LF' | 'CCM')[];
 }
 
@@ -16,478 +16,96 @@ export interface Heat {
   steelGrade: string;
   isSubHeat: boolean;
   parentHeatId?: string;
-  eafStatus: 'not_started' | 'in_progress' | 'completed' | 'needs_review';
-  lfStatus: 'not_started' | 'in_progress' | 'completed' | 'needs_review';
-  ccmStatus: 'not_started' | 'in_progress' | 'completed' | 'needs_review';
-  eafData?: EAFRecord;
-  lfData?: LFRecord;
-  ccmData?: CCMRecord;
+  eafStatus: 'not_started' | 'in_progress' | 'completed';
+  lfStatus: 'not_started' | 'in_progress' | 'completed';
+  ccmStatus: 'not_started' | 'in_progress' | 'completed';
+  eafData?: any;
+  lfData?: any;
+  ccmData?: any;
   warnings: string[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface EAFRecord {
-  heatId: string;
-  date: string;
-  shift: string;
-  steelGrade: string;
-  refractoryStatus: {
-    walls: string;
-    centerPiece: string;
-    bottom: string;
-    taphole: string;
-  };
-  preStartStoppages: Stoppages[];
-  timeStart: string;
-  samples: EAFSample[];
-  tapping: EAFTapping;
-  tappingEndTime: string;
-  duringStoppages: Stoppages[];
-  ladleInfo: {
-    ladleNumber: string;
-    requestTime: string;
-    deliveryTime: string;
-    slagCondition: string;
-    wallCondition: string;
-  };
-  electrodeStatus: {
-    phase1: string[];
-    phase2: string[];
-    phase3: string[];
-  };
-  scrapBuckets: { bucketNumber: string; tonnage: number }[];
-  ladleAdditives: {
-    feMn: number;
-    feSiMn: number;
-    feSi: number;
-    lime: number;
-    graphiteCPC: number;
-    caAl: number;
-  };
-  chemicalAnalysis: {
-    sample1: { c: number; si: number; mn: number; p: number; s: number };
-    sample2: { c: number; si: number; mn: number; p: number; s: number };
-    sample3: { c: number; si: number; mn: number; p: number; s: number };
-  };
-  consumables: {
-    thermocouple: number;
-    sampler: number;
-    oxyProbe: number;
-    tapholeSand: number;
-  };
-  ppm: number;
-  cOutput: number;
-  workingTimes: {
-    powerOn: string;
-    powerOff: string;
-    tapToTap: string;
-  };
-  tappingWeight: number;
-  recordingOperator: string;
-  shiftSupervisor: string;
-  supervisorNotes: string;
-}
+export const STEEL_GRADES = ['4402', '3203', '3401', '3204', '3302', '4501'];
+export const SHIFTS = ['A', 'B', 'C', 'D'];
 
-export interface LFRecord {
-  heatId: string;
-  date: string;
-  shift: string;
-  steelGrade: string;
-  ladleStatus: {
-    ladleNumber: string;
-    changeLadle: boolean;
-    slagLineLife: number;
-    ladleLife: number;
-    transfercarNumber: string;
-  };
-  inputCondition: {
-    inputTime: string;
-    inputTemperature: number;
-    ppm: number;
-    slagThickness: number;
-    freeBoard: number;
-  };
-  electrodeStatus: {
-    phase1: string[];
-    phase2: string[];
-    phase3: string[];
-  };
-  stoppages: Stoppages[];
-  processData: LFProcessRow[];
-  additives: Record<string, number[]>;
-  stringStatus: {
-    line1: string;
-    line2: string;
-  };
-  tapLanceTimes: [string, string];
-  chemicalAnalysis: {
-    sample1: { c: number; si: number; mn: number; p: number; s: number; al: number };
-    sample2: { c: number; si: number; mn: number; p: number; s: number; al: number };
-    sample3: { c: number; si: number; mn: number; p: number; s: number; al: number };
-    sample4: { c: number; si: number; mn: number; p: number; s: number; al: number };
-    sample5: { c: number; si: number; mn: number; p: number; s: number; al: number };
-  };
-  probeConsumption: {
-    thermocouple: number;
-    sampler: number;
-    oxyProbe: number;
-  };
-  argonConsumption: {
-    timeString: string;
-    consumption: number;
-  };
-  deliveryTimeToCCM: string;
-  recordingOperator: string;
-  shiftSupervisor: string;
-  supervisorNotes: string;
-}
-
-export interface CCMRecord {
-  heatId: string;
-  date: string;
-  shift: string;
-  steelGrade: string;
-  oilType: string;
-  ladleShroud: boolean;
-  avgCastingSpeed: number;
-  lines: CCMLine[];
-  temperatures: {
-    requestedFromLF: number;
-    sentFromLF: number;
-  };
-  mainTimes: {
-    nextHeatRequestTime: string;
-    castingStartTime: string;
-    castingEndTime: string;
-    heatNumberInSequence: number;
-  };
-  moldTubeLife: number[];
-  lineBreakReport: {
-    lineNumber: number;
-    breakTime: string;
-    cause: string;
-  } | null;
-  moldChange: {
-    lineNumber: number;
-    moldNumber: string;
-    numberOfHeats: number;
-    cause: string;
-  } | null;
-  ladleReport: {
-    ladleNumber: string;
-    timePlacedOnTurret: string;
-    deliveredMeltWeight: number;
-    slideGateOpeningTime: string;
-    numberOfOxygenLances: number;
-    returnedMeltWeight: number;
-  };
-  tundishReport: {
-    tundishCarNumber: string;
-    tundishNumber: string;
-    sequentialHeats: number;
-    residualMeltWeight: number;
-  };
-  returnHeat: {
-    returnTime: string;
-    cause: string;
-  } | null;
-  tundishTemperatures: { time: string; temperature: number }[];
-  qualityReports: {
-    line: number;
-    time: string;
-    reporterName: string;
-    defectReported: string;
-    correctiveAction: string;
-    result: string;
-  }[];
-  sequenceCutReason: string;
-  stoppages: Stoppages[];
-  recordingTechnician: string;
-  shiftSupervisor: string;
-  supervisorNotes: string;
-}
-
-export interface Stoppages {
-  from: string;
-  till: string;
-  minutes: number;
-  workingGroup: string;
-  description: string;
-}
-
-export interface EAFTapping {
-  timeTapping: string;
-  enCou: number;
-  tap: number;
-  dri: number;
-  briquet: number;
-  dolomite: number;
-  limeMHU: number;
-  carbonMHU: number;
-  cpcMHU: number;
-  cpcInjection: number;
-  ch4: number;
-  oxygen: number;
-}
-
-export interface EAFSample {
-  timeSample: string;
-  enCou: number;
-  tap: number;
-  dri: number;
-  briquet: number;
-  dolomite: number;
-  limeMHU: number;
-  carbonMHU: number;
-  cpcMHU: number;
-  cpcInjection: number;
-  ch4: number;
-  oxygen: number;
-}
-
-export interface LFProcessRow {
-  time: string;
-  temp: number;
-  ppm: number;
-  enCou: number;
-  tap: number;
-  pOn: number;
-  description: string;
-}
-
-export interface CCMLine {
-  lineNumber: number;
-  castingStartTime: string;
-  castingMode: 'Automatic' | 'Manual' | '';
-  castingSpeed: number;
-  moldNumber: string;
-  castingEndTime: string;
-}
-
-export interface AuditLog {
-  id: string;
-  userId: string;
-  userName: string;
-  timestamp: string;
-  action: 'create' | 'edit' | 'delete' | 'login' | 'logout' | 'backup' | 'restore' | 'approve';
-  recordType: string;
-  recordId: string;
-  details: string;
-  oldValue?: string;
-  newValue?: string;
-}
-
-export interface BackupRecord {
-  id: string;
-  timestamp: string;
-  type: 'full' | 'incremental';
-  status: 'success' | 'failed';
-  size: string;
-  notes: string;
-}
-
-// Mock Users
-export const mockUsers: User[] = [
-  {
-    id: '1',
-    username: 'admin',
-    fullName: 'مدیر سامانه',
-    role: 'admin',
-    isActive: true,
-    permissions: ['view', 'create', 'edit', 'approve', 'manage_users', 'view_reports', 'view_audit', 'manage_backup'],
-    unitAccess: ['EAF', 'LF', 'CCM']
-  },
-  {
-    id: '2',
-    username: 'eaf_operator',
-    fullName: 'احمد رضایی',
-    role: 'eaf_user',
-    isActive: true,
-    permissions: ['view', 'create', 'edit'],
-    unitAccess: ['EAF']
-  },
-  {
-    id: '3',
-    username: 'lf_operator',
-    fullName: 'محمد حسینی',
-    role: 'lf_user',
-    isActive: true,
-    permissions: ['view', 'create', 'edit'],
-    unitAccess: ['LF']
-  },
-  {
-    id: '4',
-    username: 'ccm_operator',
-    fullName: 'علی محمدی',
-    role: 'ccm_user',
-    isActive: true,
-    permissions: ['view', 'create', 'edit'],
-    unitAccess: ['CCM']
-  },
-  {
-    id: '5',
-    username: 'shift_sup',
-    fullName: 'رضا کریمی',
-    role: 'shift_supervisor',
-    isActive: true,
-    permissions: ['view', 'create', 'edit', 'approve'],
-    unitAccess: ['EAF', 'LF', 'CCM']
-  },
-  {
-    id: '6',
-    username: 'prod_manager',
-    fullName: 'حسن احمدی',
-    role: 'production_manager',
-    isActive: true,
-    permissions: ['view', 'view_reports'],
-    unitAccess: ['EAF', 'LF', 'CCM']
-  }
+export const WORKING_GROUPS = [
+  'Setup Time',
+  'کوره-تولید',
+  'کوره-برق',
+  'کوره-مکانیک',
+  'ریخته‌گری-تولید',
+  'ریخته‌گری-مکانیک',
+  'ریخته‌گری-برق',
+  'انرژی و سیالات',
+  'برنامه‌ریزی شده',
+  'نسوز',
+  'گهرترابر',
+  'متریال و هندلینگ',
+  'فیوم',
+  'پست برق',
+  'سایر',
 ];
 
-// Mock Heats
-export const mockHeats: Heat[] = [
-  {
-    id: '1',
-    heatId: '1250',
-    date: '1403/09/15',
-    shift: 'A',
-    steelGrade: 'St37',
-    isSubHeat: false,
-    eafStatus: 'completed',
-    lfStatus: 'completed',
-    ccmStatus: 'completed',
-    warnings: [],
-    createdAt: '1403/09/15 08:30',
-    updatedAt: '1403/09/15 14:45'
-  },
-  {
-    id: '2',
-    heatId: '1251',
-    date: '1403/09/15',
-    shift: 'A',
-    steelGrade: 'St52',
-    isSubHeat: false,
-    eafStatus: 'completed',
-    lfStatus: 'in_progress',
-    ccmStatus: 'not_started',
-    warnings: ['اطلاعات LF ناقص است'],
-    createdAt: '1403/09/15 10:15',
-    updatedAt: '1403/09/15 15:20'
-  },
-  {
-    id: '3',
-    heatId: '1252',
-    date: '1403/09/15',
-    shift: 'B',
-    steelGrade: 'St37',
-    isSubHeat: false,
-    eafStatus: 'in_progress',
-    lfStatus: 'not_started',
-    ccmStatus: 'not_started',
-    warnings: [],
-    createdAt: '1403/09/15 16:00',
-    updatedAt: '1403/09/15 17:30'
-  },
-  {
-    id: '4',
-    heatId: '1250-1',
-    date: '1403/09/15',
-    shift: 'A',
-    steelGrade: 'St37',
-    isSubHeat: true,
-    parentHeatId: '1250',
-    eafStatus: 'not_started',
-    lfStatus: 'completed',
-    ccmStatus: 'completed',
-    warnings: [],
-    createdAt: '1403/09/15 13:00',
-    updatedAt: '1403/09/15 16:00'
-  },
-  {
-    id: '5',
-    heatId: '1253',
-    date: '1403/09/16',
-    shift: 'A',
-    steelGrade: 'St44',
-    isSubHeat: false,
-    eafStatus: 'completed',
-    lfStatus: 'completed',
-    ccmStatus: 'in_progress',
-    warnings: ['اختلاف زمانی بین تحویل LF و شروع CCM'],
-    createdAt: '1403/09/16 08:00',
-    updatedAt: '1403/09/16 13:00'
-  },
-  {
-    id: '6',
-    heatId: '1254',
-    date: '1403/09/16',
-    shift: 'B',
-    steelGrade: 'St37',
-    isSubHeat: false,
-    eafStatus: 'completed',
-    lfStatus: 'completed',
-    ccmStatus: 'completed',
-    warnings: [],
-    createdAt: '1403/09/16 16:00',
-    updatedAt: '1403/09/16 22:30'
-  }
+export const LADLE_NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+export const defaultUsers: User[] = [
+  { id: '1', username: '19029', password: '19029', fullName: 'مدیر سایت', role: 'admin', isActive: true, unitAccess: ['EAF', 'LF', 'CCM'] },
+  { id: '2', username: '19377', password: '19377', fullName: 'کاربر EAF', role: 'eaf_user', isActive: true, unitAccess: ['EAF'] },
+  { id: '3', username: '19513', password: '19513', fullName: 'کاربر LF', role: 'lf_user', isActive: true, unitAccess: ['LF'] },
+  { id: '4', username: '19616', password: '19616', fullName: 'کاربر CCM', role: 'ccm_user', isActive: true, unitAccess: ['CCM'] },
+  { id: '5', username: '19452', password: '19452', fullName: 'کاربر تحلیل', role: 'analyst', isActive: true, unitAccess: ['EAF', 'LF', 'CCM'] },
 ];
 
-// Mock Audit Logs
-export const mockAuditLogs: AuditLog[] = [
-  { id: '1', userId: '1', userName: 'مدیر سامانه', timestamp: '1403/09/16 08:00', action: 'create', recordType: 'Heat', recordId: '1253', details: 'ایجاد ذوب جدید' },
-  { id: '2', userId: '2', userName: 'احمد رضایی', timestamp: '1403/09/16 08:15', action: 'edit', recordType: 'EAF', recordId: '1253', details: 'ثبت اطلاعات کوره قوس الکتریکی' },
-  { id: '3', userId: '3', userName: 'محمد حسینی', timestamp: '1403/09/16 10:30', action: 'edit', recordType: 'LF', recordId: '1253', details: 'ثبت اطلاعات کوره پاتیلی' },
-  { id: '4', userId: '4', userName: 'علی محمدی', timestamp: '1403/09/16 12:00', action: 'edit', recordType: 'CCM', recordId: '1253', details: 'ثبت اطلاعات ریخته‌گری مداوم' },
-  { id: '5', userId: '1', userName: 'مدیر سامانه', timestamp: '1403/09/16 06:00', action: 'backup', recordType: 'System', recordId: '-', details: 'پشتیبان‌گیری کامل' },
-  { id: '6', userId: '5', userName: 'رضا کریمی', timestamp: '1403/09/15 22:00', action: 'approve', recordType: 'Heat', recordId: '1250', details: 'تأیید اطلاعات ذوب' },
+export const defaultHeats: Heat[] = [
+  { id: '1', heatId: '1250', date: '1403/09/15', shift: 'A', steelGrade: '4402', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed', warnings: [], createdAt: '1403/09/15 08:30', updatedAt: '1403/09/15 14:45',
+    eafData: { tappingWeight: 85, powerOn: '08:30', powerOff: '11:30', tapToTap: 75, enCou: 42.5, materials: { feMn: 280, feSiMn: 150, feSi: 120, lime: 2500, carbon: 800, cpcInjection: 300, oxygen: 4500 } },
+    lfData: { additives: { feMn: 120, feSiMn: 80, feSi: 60, lime: 800, graphite: 200, caC2: 150, caAl: 100, isoterm: 50, caSiWire: 30, caFeWire: 25, alWire: 40, deoxidizer: 60 } },
+    ccmData: { avgCastingSpeed: 1.2, lineBreaks: 1, sequenceHeats: 4 }
+  },
+  { id: '2', heatId: '1251', date: '1403/09/15', shift: 'A', steelGrade: '3203', isSubHeat: false, eafStatus: 'completed', lfStatus: 'in_progress', ccmStatus: 'not_started', warnings: ['اطلاعات LF ناقص'], createdAt: '1403/09/15 10:15', updatedAt: '1403/09/15 15:20',
+    eafData: { tappingWeight: 82, powerOn: '10:15', powerOff: '13:00', tapToTap: 80, enCou: 44.2, materials: { feMn: 300, feSiMn: 160, feSi: 130, lime: 2600, carbon: 820, cpcInjection: 310, oxygen: 4600 } },
+  },
+  { id: '3', heatId: '1252', date: '1403/09/15', shift: 'B', steelGrade: '3401', isSubHeat: false, eafStatus: 'in_progress', lfStatus: 'not_started', ccmStatus: 'not_started', warnings: [], createdAt: '1403/09/15 16:00', updatedAt: '1403/09/15 17:30',
+    eafData: { tappingWeight: 88, powerOn: '16:00', powerOff: '19:00', tapToTap: 72, enCou: 41.8 },
+  },
+  { id: '4', heatId: '1253', date: '1403/09/16', shift: 'A', steelGrade: '3204', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'in_progress', warnings: [], createdAt: '1403/09/16 08:00', updatedAt: '1403/09/16 13:00',
+    eafData: { tappingWeight: 86, powerOn: '08:00', powerOff: '11:00', tapToTap: 78, enCou: 43.1, materials: { feMn: 290, feSiMn: 155, feSi: 125, lime: 2550, carbon: 810, cpcInjection: 305, oxygen: 4550 } },
+    lfData: { additives: { feMn: 130, feSiMn: 85, feSi: 65, lime: 820, graphite: 210, caC2: 155, caAl: 105, isoterm: 55, caSiWire: 32, caFeWire: 27, alWire: 42, deoxidizer: 65 } },
+    ccmData: { avgCastingSpeed: 1.15, lineBreaks: 0, sequenceHeats: 5 }
+  },
+  { id: '5', heatId: '1254', date: '1403/09/16', shift: 'B', steelGrade: '3302', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed', warnings: [], createdAt: '1403/09/16 16:00', updatedAt: '1403/09/16 22:30',
+    eafData: { tappingWeight: 84, powerOn: '16:00', powerOff: '19:15', tapToTap: 76, enCou: 42.8, materials: { feMn: 275, feSiMn: 148, feSi: 118, lime: 2480, carbon: 790, cpcInjection: 295, oxygen: 4480 } },
+    lfData: { additives: { feMn: 125, feSiMn: 82, feSi: 62, lime: 810, graphite: 205, caC2: 152, caAl: 102, isoterm: 52, caSiWire: 31, caFeWire: 26, alWire: 41, deoxidizer: 62 } },
+    ccmData: { avgCastingSpeed: 1.25, lineBreaks: 2, sequenceHeats: 3 }
+  },
+  { id: '6', heatId: '1255', date: '1403/09/16', shift: 'C', steelGrade: '4501', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed', warnings: [], createdAt: '1403/09/16 00:00', updatedAt: '1403/09/16 06:30',
+    eafData: { tappingWeight: 87, powerOn: '00:00', powerOff: '03:00', tapToTap: 74, enCou: 43.5, materials: { feMn: 295, feSiMn: 158, feSi: 128, lime: 2580, carbon: 815, cpcInjection: 308, oxygen: 4580 } },
+    lfData: { additives: { feMn: 135, feSiMn: 88, feSi: 68, lime: 830, graphite: 215, caC2: 158, caAl: 108, isoterm: 58, caSiWire: 34, caFeWire: 28, alWire: 44, deoxidizer: 68 } },
+    ccmData: { avgCastingSpeed: 1.18, lineBreaks: 1, sequenceHeats: 6 }
+  },
+  { id: '7', heatId: '1256', date: '1403/09/17', shift: 'A', steelGrade: '4402', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed', warnings: [], createdAt: '1403/09/17 08:00', updatedAt: '1403/09/17 14:00',
+    eafData: { tappingWeight: 83, powerOn: '08:00', powerOff: '11:10', tapToTap: 77, enCou: 42.2, materials: { feMn: 270, feSiMn: 145, feSi: 115, lime: 2450, carbon: 780, cpcInjection: 290, oxygen: 4450 } },
+    lfData: { additives: { feMn: 118, feSiMn: 78, feSi: 58, lime: 790, graphite: 195, caC2: 145, caAl: 95, isoterm: 48, caSiWire: 28, caFeWire: 24, alWire: 38, deoxidizer: 58 } },
+    ccmData: { avgCastingSpeed: 1.22, lineBreaks: 0, sequenceHeats: 4 }
+  },
+  { id: '8', heatId: '1257', date: '1403/09/17', shift: 'D', steelGrade: '3203', isSubHeat: false, eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed', warnings: [], createdAt: '1403/09/17 20:00', updatedAt: '1403/09/18 02:00',
+    eafData: { tappingWeight: 86, powerOn: '20:00', powerOff: '23:00', tapToTap: 73, enCou: 43.8, materials: { feMn: 285, feSiMn: 152, feSi: 122, lime: 2520, carbon: 805, cpcInjection: 302, oxygen: 4520 } },
+    lfData: { additives: { feMn: 128, feSiMn: 84, feSi: 64, lime: 815, graphite: 208, caC2: 154, caAl: 104, isoterm: 54, caSiWire: 33, caFeWire: 27, alWire: 43, deoxidizer: 64 } },
+    ccmData: { avgCastingSpeed: 1.3, lineBreaks: 1, sequenceHeats: 7 }
+  },
 ];
 
-// Mock Backup Records
-export const mockBackups: BackupRecord[] = [
-  { id: '1', timestamp: '1403/09/16 06:00', type: 'full', status: 'success', size: '245 MB', notes: 'پشتیبان‌گیری روزانه' },
-  { id: '2', timestamp: '1403/09/15 06:00', type: 'full', status: 'success', size: '240 MB', notes: 'پشتیبان‌گیری روزانه' },
-  { id: '3', timestamp: '1403/09/14 06:00', type: 'full', status: 'success', size: '238 MB', notes: 'پشتیبان‌گیری روزانه' },
-  { id: '4', timestamp: '1403/09/13 06:00', type: 'full', status: 'failed', size: '-', notes: 'خطا در فضای ذخیره‌سازی' },
+export const defaultAuditLogs = [
+  { id: '1', userId: '1', userName: 'مدیر سایت', timestamp: '1403/09/17 08:00', action: 'create', recordType: 'Heat', recordId: '1256', details: 'ایجاد ذوب جدید' },
+  { id: '2', userId: '2', userName: 'کاربر EAF', timestamp: '1403/09/17 08:15', action: 'edit', recordType: 'EAF', recordId: '1256', details: 'ثبت اطلاعات EAF' },
+  { id: '3', userId: '3', userName: 'کاربر LF', timestamp: '1403/09/17 10:30', action: 'edit', recordType: 'LF', recordId: '1256', details: 'ثبت اطلاعات LF' },
+  { id: '4', userId: '4', userName: 'کاربر CCM', timestamp: '1403/09/17 12:00', action: 'edit', recordType: 'CCM', recordId: '1256', details: 'ثبت اطلاعات CCM' },
 ];
 
-// Dashboard Stats
-export const dashboardStats = {
-  totalHeats: 6,
-  completedHeats: 3,
-  inProgressHeats: 2,
-  notStartedHeats: 1,
-  totalProduction: 485, // tons
-  avgEnergyConsumption: 520, // kWh/ton
-  totalStoppages: 8,
-  totalStoppageMinutes: 145,
-  eafCompletionRate: 83,
-  lfCompletionRate: 67,
-  ccmCompletionRate: 50,
-};
-
-// Chart Data
-export const productionChartData = [
-  { name: 'شنبه', production: 78, target: 80 },
-  { name: 'یکشنبه', production: 82, target: 80 },
-  { name: 'دوشنبه', production: 75, target: 80 },
-  { name: 'سه‌شنبه', production: 88, target: 80 },
-  { name: 'چهارشنبه', production: 81, target: 80 },
-  { name: 'پنجشنبه', production: 85, target: 80 },
-];
-
-export const energyChartData = [
-  { name: 'شنبه', consumption: 510 },
-  { name: 'یکشنبه', consumption: 525 },
-  { name: 'دوشنبه', consumption: 498 },
-  { name: 'سه‌شنبه', consumption: 540 },
-  { name: 'چهارشنبه', consumption: 515 },
-  { name: 'پنجشنبه', consumption: 530 },
-];
-
-export const shiftComparisonData = [
-  { name: 'شیفت A', eaf: 45, lf: 38, ccm: 42 },
-  { name: 'شیفت B', eaf: 42, lf: 40, ccm: 38 },
-  { name: 'شیفت C', eaf: 40, lf: 35, ccm: 44 },
+export const defaultBackups = [
+  { id: '1', timestamp: '1403/09/17 06:00', type: 'full', status: 'success', size: '245 MB', notes: 'پشتیبان‌گیری روزانه' },
+  { id: '2', timestamp: '1403/09/16 06:00', type: 'full', status: 'success', size: '240 MB', notes: 'پشتیبان‌گیری روزانه' },
+  { id: '3', timestamp: '1403/09/15 06:00', type: 'full', status: 'success', size: '238 MB', notes: 'پشتیبان‌گیری روزانه' },
 ];

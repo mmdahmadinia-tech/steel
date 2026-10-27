@@ -14,75 +14,121 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     setTimeout(() => {
       const success = login(username, password);
       if (success) {
         navigate('/dashboard');
       } else {
-        setError('نام کاربری یا رمز عبور نامعتبر است');
+        setError('نام کاربری یا رمز عبور اشتباه است');
       }
       setLoading(false);
-    }, 800);
+    }, 500);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4" dir="rtl">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" dir="rtl" style={{
+      background: 'linear-gradient(135deg, #1a0000 0%, #2d1810 30%, #1a0a00 60%, #0d0d0d 100%)',
+    }}>
+      {/* Animated Background Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Molten metal glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse" style={{
+          background: 'radial-gradient(circle, #ff6b00 0%, #ff4500 30%, transparent 70%)',
+          animation: 'pulse 4s ease-in-out infinite',
         }}></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full opacity-15" style={{
+          background: 'radial-gradient(circle, #ff8c00 0%, #ff6347 40%, transparent 70%)',
+          animation: 'pulse 6s ease-in-out infinite reverse',
+        }}></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10" style={{
+          background: 'radial-gradient(circle, #ffd700 0%, #ff8c00 50%, transparent 70%)',
+          animation: 'pulse 5s ease-in-out infinite',
+        }}></div>
+        
+        {/* Sparks */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div key={i} className="absolute w-1 h-1 bg-orange-400 rounded-full opacity-60" style={{
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            animation: `spark ${2 + Math.random() * 3}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`,
+          }}></div>
+        ))}
       </div>
 
-      <div className="relative w-full max-w-md">
+      <style>{`
+        @keyframes spark {
+          0%, 100% { opacity: 0; transform: translateY(0) scale(0.5); }
+          50% { opacity: 1; transform: translateY(-20px) scale(1); }
+        }
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.3); }
+          50% { box-shadow: 0 0 40px rgba(255, 107, 0, 0.6); }
+        }
+      `}</style>
+
+      <div className="relative w-full max-w-md z-10">
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-2xl mb-4">
-            <span className="text-3xl font-bold text-white">SM</span>
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-4 relative" style={{
+            background: 'linear-gradient(135deg, #ff6b00, #ff4500, #dc2626)',
+            boxShadow: '0 0 40px rgba(255, 107, 0, 0.4), 0 0 80px rgba(255, 69, 0, 0.2)',
+            animation: 'glow 3s ease-in-out infinite',
+          }}>
+            <span className="text-4xl font-black text-white">SM</span>
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">STEELMETRICS</h1>
-          <p className="text-blue-200 text-sm">سامانه مدیریت و تحلیل تولید فولاد</p>
-          <p className="text-blue-300/60 text-xs mt-1">Steel Production Management & Analytics System</p>
+          <h1 className="text-3xl font-black text-white mb-2" style={{ textShadow: '0 0 20px rgba(255, 107, 0, 0.5)' }}>
+            STEELMETRICS
+          </h1>
+          <p className="text-orange-300 text-sm font-medium">سامانه مدیریت و تحلیل تولید فولاد</p>
+          <p className="text-orange-400/50 text-xs mt-1">Steel Production Management & Analytics</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">ورود به سامانه</h2>
+        <div className="rounded-2xl p-8 relative" style={{
+          background: 'rgba(20, 10, 5, 0.85)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 107, 0, 0.2)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 107, 0, 0.1)',
+        }}>
+          <h2 className="text-xl font-bold text-white mb-6 text-center">ورود به سامانه</h2>
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">نام کاربری</label>
-              <div className="relative">
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">👤</span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
-                  placeholder="نام کاربری خود را وارد کنید"
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium text-orange-200 mb-2">نام کاربری</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 outline-none transition-all"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 107, 0, 0.3)',
+                }}
+                placeholder="کد پرسنلی"
+                required
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">رمز عبور</label>
-              <div className="relative">
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">🔒</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
-                  placeholder="رمز عبور خود را وارد کنید"
-                  required
-                />
-              </div>
+              <label className="block text-sm font-medium text-orange-200 mb-2">رمز عبور</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 outline-none transition-all"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 107, 0, 0.3)',
+                }}
+                placeholder="رمز عبور"
+                required
+              />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+              <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{error}</span>
               </div>
@@ -91,67 +137,25 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full font-bold py-3 px-4 rounded-xl transition-all duration-200 text-white disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #ff6b00, #ff4500)',
+                boxShadow: '0 4px 15px rgba(255, 107, 0, 0.4)',
+              }}
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  در حال ورود...
-                </span>
-              ) : 'ورود به سامانه'}
+              {loading ? 'در حال ورود...' : '🔥 ورود به سامانه'}
             </button>
           </form>
 
-          {/* Demo Users */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">کاربران آزمایشی:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => { setUsername('admin'); setPassword('admin'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                مدیر سامانه
-              </button>
-              <button
-                onClick={() => { setUsername('eaf_operator'); setPassword('pass'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                کاربر EAF
-              </button>
-              <button
-                onClick={() => { setUsername('lf_operator'); setPassword('pass'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                کاربر LF
-              </button>
-              <button
-                onClick={() => { setUsername('ccm_operator'); setPassword('pass'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                کاربر CCM
-              </button>
-              <button
-                onClick={() => { setUsername('shift_sup'); setPassword('pass'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                سرپرست شیفت
-              </button>
-              <button
-                onClick={() => { setUsername('prod_manager'); setPassword('pass'); }}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                مدیر تولید
-              </button>
-            </div>
+          {/* Footer */}
+          <div className="mt-6 pt-4 border-t border-orange-900/30 text-center">
+            <p className="text-orange-300/60 text-xs">دفتر فنی و برنامه‌ریزی تولید</p>
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Bottom */}
         <div className="text-center mt-6">
-          <p className="text-blue-200/60 text-xs">steelmetrics.ir — نسخه ۱.۰</p>
+          <p className="text-orange-400/40 text-xs">steelmetrics.ir — نسخه ۱.۰</p>
         </div>
       </div>
     </div>

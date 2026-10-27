@@ -1,36 +1,43 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Heat, AuditLog, BackupRecord, mockHeats, mockAuditLogs, mockBackups } from '../data/mockData';
+import { Heat, defaultHeats } from '../data/mockData';
 
 interface DataContextType {
   heats: Heat[];
-  auditLogs: AuditLog[];
-  backups: BackupRecord[];
   addHeat: (heat: Heat) => void;
-  updateHeat: (id: string, heat: Partial<Heat>) => void;
-  addAuditLog: (log: AuditLog) => void;
+  updateHeat: (id: string, data: Partial<Heat>) => void;
+  getNextHeatId: () => string;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [heats, setHeats] = useState<Heat[]>(mockHeats);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(mockAuditLogs);
-  const [backups] = useState<BackupRecord[]>(mockBackups);
+  const [heats, setHeats] = useState<Heat[]>(() => {
+    const saved = localStorage.getItem('steelmetrics_heats');
+    return saved ? JSON.parse(saved) : defaultHeats;
+  });
+
+  const saveHeats = (newHeats: Heat[]) => {
+    setHeats(newHeats);
+    localStorage.setItem('steelmetrics_heats', JSON.stringify(newHeats));
+  };
 
   const addHeat = (heat: Heat) => {
-    setHeats(prev => [heat, ...prev]);
+    saveHeats([heat, ...heats]);
   };
 
   const updateHeat = (id: string, data: Partial<Heat>) => {
-    setHeats(prev => prev.map(h => h.id === id ? { ...h, ...data } : h));
+    const newHeats = heats.map(h => h.id === id ? { ...h, ...data } : h);
+    saveHeats(newHeats);
   };
 
-  const addAuditLog = (log: AuditLog) => {
-    setAuditLogs(prev => [log, ...prev]);
+  const getNextHeatId = (): string => {
+    const nums = heats.map(h => parseInt(h.heatId)).filter(n => !isNaN(n));
+    const max = nums.length > 0 ? Math.max(...nums) : 1249;
+    return String(max + 1);
   };
 
   return (
-    <DataContext.Provider value={{ heats, auditLogs, backups, addHeat, updateHeat, addAuditLog }}>
+    <DataContext.Provider value={{ heats, addHeat, updateHeat, getNextHeatId }}>
       {children}
     </DataContext.Provider>
   );
@@ -38,8 +45,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 export function useData() {
   const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error('useData must be used within a DataProvider');
-  }
+  if (context === undefined) throw new Error('useData must be used within DataProvider');
   return context;
 }

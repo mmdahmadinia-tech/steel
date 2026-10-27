@@ -14,12 +14,11 @@ import ReportsPage from './pages/ReportsPage';
 import UsersPage from './pages/UsersPage';
 import AuditLogPage from './pages/AuditLogPage';
 import BackupPage from './pages/BackupPage';
+import ProfilePage from './pages/ProfilePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
 }
 
@@ -28,90 +27,18 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/heats"
-        element={
-          <ProtectedRoute>
-            <HeatsListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/heats/:id"
-        element={
-          <ProtectedRoute>
-            <HeatDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/eaf"
-        element={
-          <ProtectedRoute>
-            <EAFPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/lf"
-        element={
-          <ProtectedRoute>
-            <LFPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/ccm"
-        element={
-          <ProtectedRoute>
-            <CCMPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reports"
-        element={
-          <ProtectedRoute>
-            <ReportsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/users"
-        element={
-          <ProtectedRoute>
-            <UsersPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/audit"
-        element={
-          <ProtectedRoute>
-            <AuditLogPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/backup"
-        element={
-          <ProtectedRoute>
-            <BackupPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />
+      <Route path="/heats/:id" element={<ProtectedRoute><HeatDetailPage /></ProtectedRoute>} />
+      <Route path="/eaf" element={<ProtectedRoute><EAFPage /></ProtectedRoute>} />
+      <Route path="/lf" element={<ProtectedRoute><LFPage /></ProtectedRoute>} />
+      <Route path="/ccm" element={<ProtectedRoute><CCMPage /></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+      <Route path="/audit" element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
+      <Route path="/backup" element={<ProtectedRoute><BackupPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
