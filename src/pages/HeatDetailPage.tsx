@@ -1,10 +1,10 @@
 import React from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Link } from 'react-router-dom';
 
 export default function HeatDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const { heats } = useData();
-  const [id] = React.useState(window.location.hash.split('/').pop());
   const heat = heats.find(h => h.id === id);
 
   if (!heat) {
@@ -72,6 +72,67 @@ export default function HeatDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* EAF Data */}
+      {heat.eafData && (
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">⚡ اطلاعات EAF</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div><p className="text-sm text-gray-500">تاریخ</p><p className="font-bold">{heat.date}</p></div>
+            <div><p className="text-sm text-gray-500">شیفت</p><p className="font-bold">{heat.shift}</p></div>
+            <div><p className="text-sm text-gray-500">گرید</p><p className="font-bold">{heat.steelGrade}</p></div>
+            <div><p className="text-sm text-gray-500">وزن تخلیه</p><p className="font-bold">{heat.eafData.tappingWeight || '-'} تن</p></div>
+            <div><p className="text-sm text-gray-500">Power On</p><p className="font-bold">{heat.eafData.powerOn || '-'} دقیقه</p></div>
+            <div><p className="text-sm text-gray-500">Power Off</p><p className="font-bold">{heat.eafData.powerOff || '-'} دقیقه</p></div>
+            <div><p className="text-sm text-gray-500">TAP TO TAP</p><p className="font-bold">{heat.eafData.tapToTap || '-'} دقیقه</p></div>
+            <div><p className="text-sm text-gray-500">En.Cou</p><p className="font-bold">{heat.eafData.enCou || '-'} MWh</p></div>
+          </div>
+          {heat.eafData.materials && (
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="font-bold text-gray-700 mb-2">مواد مصرفی</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>FeMn: {heat.eafData.materials.feMn || 0} Kg</div>
+                <div>FeSiMn: {heat.eafData.materials.feSiMn || 0} Kg</div>
+                <div>FeSi: {heat.eafData.materials.feSi || 0} Kg</div>
+                <div>Lime: {heat.eafData.materials.lime || 0} Kg</div>
+                <div>Carbon: {heat.eafData.materials.carbon || 0} Kg</div>
+                <div>CPC Injection: {heat.eafData.materials.cpcInjection || 0} Kg</div>
+                <div>Oxygen: {heat.eafData.materials.oxygen || 0} Nm³</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* LF Data */}
+      {heat.lfData && (
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">🔧 اطلاعات LF</h3>
+          {heat.lfData.additives && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div>FeMn: {heat.lfData.additives.feMn || 0} Kg</div>
+              <div>FeSiMn: {heat.lfData.additives.feSiMn || 0} Kg</div>
+              <div>FeSi: {heat.lfData.additives.feSi || 0} Kg</div>
+              <div>Lime: {heat.lfData.additives.lime || 0} Kg</div>
+              <div>Graphite: {heat.lfData.additives.graphite || 0} Kg</div>
+              <div>CaC2: {heat.lfData.additives.caC2 || 0} Kg</div>
+              <div>Ca.Al: {heat.lfData.additives.caAl || 0} Kg</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* CCM Data */}
+      {heat.ccmData && (
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">🏭 اطلاعات CCM</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div><p className="text-sm text-gray-500">سرعت ریخته‌گری</p><p className="font-bold">{heat.ccmData.avgCastingSpeed || '-'} m/min</p></div>
+            <div><p className="text-sm text-gray-500">پارگی خطوط</p><p className="font-bold">{heat.ccmData.lineBreaks || 0}</p></div>
+            <div><p className="text-sm text-gray-500">ذوب در سکوئنس</p><p className="font-bold">{heat.ccmData.sequenceHeats || '-'}</p></div>
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <h3 className="text-lg font-bold text-gray-800 mb-4">🔗 مسیر تولید</h3>

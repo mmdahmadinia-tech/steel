@@ -3,7 +3,6 @@ REM ============================================
 REM STEELMETRICS - Start Development Server
 REM ============================================
 
-REM Change to the directory where this bat file is located
 cd /d "%~dp0"
 
 echo.
@@ -65,6 +64,7 @@ if not exist "node_modules\" (
     if %errorlevel% neq 0 (
         echo.
         echo [ERROR] Failed to install dependencies!
+        echo Please check your internet connection.
         echo.
         pause
         exit /b 1
@@ -85,7 +85,7 @@ echo ------------------------------------------------
 echo   URL: http://localhost:3000
 echo ------------------------------------------------
 echo.
-echo   Demo Users (password: anything):
+echo   Demo Users:
 echo   - admin          (Full Admin)
 echo   - eaf_operator   (EAF User)
 echo   - lf_operator    (LF User)
@@ -105,7 +105,7 @@ REM Open browser
 start http://localhost:3000
 
 REM Start dev server
-npm run dev
+call npm run dev
 
 REM If server stops, pause before closing
 echo.

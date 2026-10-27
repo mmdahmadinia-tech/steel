@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
-import { STEEL_GRADES, SHIFTS, WORKING_GROUPS } from '../data/mockData';
+import { STEEL_GRADES, SHIFTS } from '../data/mockData';
+
+const WORKING_GROUPS = [
+  'کوره-تولید',
+  'کوره-برق',
+  'کوره-مکانیک',
+  'ریخته‌گری-تولید',
+  'ریخته‌گری-مکانیک',
+  'ریخته‌گری-برق',
+  'انرژی و سیالات',
+  'برنامه‌ریزی شده',
+  'نسوز',
+  'گهرترابر',
+  'متریال و هندلینگ',
+  'فیوم',
+  'پست برق',
+  'سایر',
+];
 
 export default function LFPage() {
   const { heats, addHeat, updateHeat } = useData();
