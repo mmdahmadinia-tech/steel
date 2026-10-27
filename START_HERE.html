@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STEELMETRICS - راهنمای شروع</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -23,7 +19,7 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             padding: 40px;
         }
@@ -44,29 +40,38 @@
             color: white;
             margin-bottom: 20px;
         }
-        h1 {
-            color: #333;
-            font-size: 32px;
-            margin-bottom: 10px;
+        h1 { color: #333; font-size: 32px; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 16px; }
+        
+        .alert {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
         }
-        .subtitle {
-            color: #666;
-            font-size: 16px;
-        }
+        .alert h3 { color: #92400e; margin-bottom: 10px; }
+        .alert p { color: #92400e; line-height: 1.8; }
+        
         .steps {
             background: #f8f9fa;
             border-radius: 15px;
             padding: 30px;
             margin: 30px 0;
         }
+        .steps h2 { margin-bottom: 20px; color: #333; }
+        
         .step {
             display: flex;
             align-items: flex-start;
             margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
         }
-        .step:last-child {
-            margin-bottom: 0;
-        }
+        .step:hover { border-color: #667eea; }
+        
         .step-number {
             width: 40px;
             height: 40px;
@@ -81,16 +86,8 @@
             margin-left: 15px;
             flex-shrink: 0;
         }
-        .step-content h3 {
-            color: #333;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        .step-content p {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-        }
+        .step-content h3 { color: #333; font-size: 18px; margin-bottom: 5px; }
+        .step-content p { color: #666; font-size: 14px; line-height: 1.6; }
         .step-content code {
             background: #e9ecef;
             padding: 2px 8px;
@@ -98,18 +95,39 @@
             font-family: 'Courier New', monospace;
             color: #d63384;
         }
-        .users {
+        
+        .files {
             background: #e7f3ff;
             border: 2px solid #b3d9ff;
             border-radius: 15px;
             padding: 20px;
             margin: 20px 0;
         }
-        .users h3 {
-            color: #0066cc;
-            margin-bottom: 15px;
-            font-size: 18px;
+        .files h3 { color: #0066cc; margin-bottom: 15px; }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
         }
+        .file-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #b3d9ff;
+        }
+        .file-item strong { color: #0066cc; display: block; margin-bottom: 3px; }
+        .file-item span { color: #666; font-size: 13px; }
+        
+        .users {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .users h3 { color: #065f46; margin-bottom: 15px; }
+        
         .user-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -119,50 +137,20 @@
             background: white;
             padding: 10px 15px;
             border-radius: 8px;
-            border: 1px solid #b3d9ff;
+            border: 1px solid #10b981;
         }
-        .user-item strong {
-            color: #0066cc;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .user-item span {
-            color: #666;
-            font-size: 13px;
-        }
-        .warning {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .warning h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-        .warning p {
-            color: #856404;
-            line-height: 1.6;
-        }
+        .user-item strong { color: #065f46; display: block; margin-bottom: 3px; }
+        .user-item span { color: #666; font-size: 13px; }
+        
         .footer {
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
             border-top: 2px solid #e9ecef;
         }
-        .footer p {
-            color: #666;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
+        .footer p { color: #666; font-size: 14px; margin: 5px 0; }
+        .footer a { color: #667eea; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -173,37 +161,91 @@
             <p class="subtitle">سامانه مدیریت و تحلیل تولید فولاد</p>
         </div>
 
+        <div class="alert">
+            <h3>⚠️ مشکل "Windows cannot find" حل شد!</h3>
+            <p>
+                مشکل اصلی این بود که فایل <code>dist/index.html</code> وجود نداشت.<br>
+                حالا از فایل <strong>run.bat</strong> استفاده کنید که همه چیز را خودکار انجام می‌دهد.
+            </p>
+        </div>
+
         <div class="steps">
-            <h2 style="margin-bottom: 20px; color: #333;">🚀 راهنمای شروع (3 مرحله ساده)</h2>
+            <h2>🚀 راهنمای شروع (3 مرحله ساده)</h2>
             
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>بررسی نصب Node.js</h3>
-                    <p>فایل <code>debug.bat</code> را اجرا کنید تا مطمئن شوید Node.js نصب است.</p>
+                    <h3>بررسی Node.js</h3>
+                    <p>
+                        فایل <code>debug.bat</code> را اجرا کنید.<br>
+                        اگر Node.js نصب باشد، نسخه آن نمایش داده می‌شود.
+                    </p>
                 </div>
             </div>
 
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>نصب وابستگی‌ها (فقط بار اول)</h3>
-                    <p>فایل <code>install.bat</code> را اجرا کنید و صبر کنید تا نصب تمام شود.</p>
+                    <h3>اجرای run.bat (پیشنهادی)</h3>
+                    <p>
+                        فایل <code>run.bat</code> را اجرا کنید.<br>
+                        این فایل همه چیز را خودکار انجام می‌دهد:
+                    </p>
+                    <p style="margin-top: 10px;">
+                        ✓ نصب وابستگی‌ها (بار اول)<br>
+                        ✓ ساخت فایل‌های برنامه<br>
+                        ✓ اجرای سرور<br>
+                        ✓ باز کردن مرورگر
+                    </p>
                 </div>
             </div>
 
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>باز کردن برنامه</h3>
-                    <p>فایل <code>open.bat</code> را اجرا کنید. مرورگر خودکار باز می‌شود!</p>
+                    <h3>ورود به سامانه</h3>
+                    <p>
+                        مرورگر باز می‌شود. با یکی از کاربران زیر وارد شوید:<br>
+                        <strong>نام کاربری:</strong> admin<br>
+                        <strong>رمز عبور:</strong> هر چیزی وارد کنید
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="files">
+            <h3>📁 فایل‌های BAT موجود</h3>
+            <div class="file-grid">
+                <div class="file-item">
+                    <strong>run.bat ⭐</strong>
+                    <span>اجرای کامل (پیشنهادی)</span>
+                </div>
+                <div class="file-item">
+                    <strong>debug.bat</strong>
+                    <span>عیب‌یابی و بررسی</span>
+                </div>
+                <div class="file-item">
+                    <strong>install.bat</strong>
+                    <span>نصب وابستگی‌ها</span>
+                </div>
+                <div class="file-item">
+                    <strong>build.bat</strong>
+                    <span>ساخت نسخه نهایی</span>
+                </div>
+                <div class="file-item">
+                    <strong>start.bat</strong>
+                    <span>سرور توسعه</span>
+                </div>
+                <div class="file-item">
+                    <strong>server.bat</strong>
+                    <span>سرور ساده</span>
                 </div>
             </div>
         </div>
 
         <div class="users">
             <h3>👥 کاربران آزمایشی</h3>
-            <p style="margin-bottom: 15px; color: #666;">رمز عبور: هر چیزی وارد کنید</p>
+            <p style="margin-bottom: 15px; color: #065f46;">رمز عبور: هر چیزی وارد کنید</p>
             <div class="user-grid">
                 <div class="user-item">
                     <strong>admin</strong>
@@ -232,13 +274,14 @@
             </div>
         </div>
 
-        <div class="warning">
-            <h3>⚠️ اگر Node.js نصب نیست:</h3>
-            <p>
-                1. به سایت <a href="https://nodejs.org" target="_blank">https://nodejs.org</a> بروید<br>
-                2. نسخه LTS (20.x) را دانلود کنید<br>
-                3. نصب کنید و کامپیوتر را ری‌استارت کنید<br>
-                4. دوباره مراحل بالا را انجام دهید
+        <div class="alert" style="background: #fee2e2; border-color: #ef4444;">
+            <h3 style="color: #991b1b;">❌ اگر هنوز مشکل دارید:</h3>
+            <p style="color: #991b1b;">
+                1. فایل <code>debug.bat</code> را اجرا کنید و خروجی را ببینید<br>
+                2. مطمئن شوید Node.js نصب است (https://nodejs.org)<br>
+                3. بعد از نصب Node.js، کامپیوتر را ری‌استارت کنید<br>
+                4. فایل‌ها را از پوشه اصلی پروژه اجرا کنید<br>
+                5. اگر باز هم کار نکرد، CMD را به عنوان Administrator باز کنید
             </p>
         </div>
 
