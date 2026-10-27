@@ -1,84 +1,88 @@
 @echo off
-chcp 65001 >nul
-title STEELMETRICS - نصب اولیه
-color 0E
+REM ============================================
+REM STEELMETRICS - Initial Setup
+REM ============================================
+
+REM Go to the directory where this bat file is located
+cd /d "%~dp0"
 
 echo.
-echo  ╔══════════════════════════════════════════════════╗
-echo  ║        STEELMETRICS - نصب اولیه                  ║
-echo  ║   بررسی پیش‌نیازها و نصب وابستگی‌ها              ║
-echo  ╚══════════════════════════════════════════════════╝
+echo  ================================================
+echo     STEELMETRICS - Initial Setup
+echo     Checking prerequisites and installing
+echo  ================================================
 echo.
 
-echo  [1/4] بررسی Node.js...
+echo  [1/4] Checking Node.js...
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo.
-    echo  ╔══════════════════════════════════════════════════╗
-    echo  ║  [!] Node.js نصب نیست                            ║
-    echo  ║                                                    ║
-    echo  ║  لطفاً مراحل زیر را انجام دهید:                   ║
-    echo  ║                                                    ║
-    echo  ║  1. به آدرس https://nodejs.org بروید              ║
-    echo  ║  2. نسخه LTS (20.x) را دانلود کنید               ║
-    echo  ║  3. فایل نصب را اجرا و مراحل را طی کنید          ║
-    echo  ║  4. سیستم را ری‌استارت کنید                       ║
-    echo  ║  5. مجدداً این فایل را اجرا کنید                  ║
-    echo  ║                                                    ║
-    echo  ╚══════════════════════════════════════════════════╝
+    echo  ================================================
+    echo   [!] Node.js is NOT installed
+    echo  ================================================
+    echo.
+    echo   Please follow these steps:
+    echo.
+    echo   1. Go to: https://nodejs.org
+    echo   2. Download LTS version (20.x)
+    echo   3. Run the installer
+    echo   4. Restart your computer
+    echo   5. Run this file again
+    echo.
+    echo  ================================================
     echo.
     start https://nodejs.org
     pause
     exit /b 1
 )
-echo  [✓] Node.js نصب است:
+echo  [OK] Node.js installed:
 node --version
 echo.
 
-echo  [2/4] بررسی npm...
+echo  [2/4] Checking npm...
 where npm >nul 2>nul
 if %errorlevel% neq 0 (
-    echo  [ERROR] npm یافت نشد!
+    echo  [ERROR] npm not found!
     pause
     exit /b 1
 )
-echo  [✓] npm نصب است:
+echo  [OK] npm installed:
 npm --version
 echo.
 
-echo  [3/4] بررسی Git (اختیاری)...
+echo  [3/4] Checking Git (optional)...
 where git >nul 2>nul
 if %errorlevel% neq 0 (
-    echo  [!] Git نصب نیست (اختیاری - برای توسعه)
+    echo  [!] Git not installed (optional - for development)
 ) else (
-    echo  [✓] Git نصب است:
+    echo  [OK] Git installed:
     git --version
 )
 echo.
 
-echo  [4/4] نصب وابستگی‌های پروژه...
-echo  (لطفاً صبر کنید...)
+echo  [4/4] Installing project dependencies...
+echo  (Please wait...)
 echo.
 call npm install
 
 if %errorlevel% neq 0 (
     echo.
-    echo  [ERROR] خطا در نصب وابستگی‌ها!
-    echo  لطفاً اتصال اینترنت خود را بررسی کنید.
+    echo  [ERROR] Failed to install dependencies!
+    echo  Please check your internet connection.
     pause
     exit /b 1
 )
 
 echo.
-echo  ══════════════════════════════════════════════════
+echo  ================================================
 echo.
-echo  [✓] نصب با موفقیت انجام شد!
+echo  [OK] Setup completed successfully!
 echo.
-echo  حالا می‌توانید:
-echo  - start.bat را اجرا کنید تا سامانه بالا بیاید
-echo  - build.bat را اجرا کنید تا نسخه production بسازید
+echo  Now you can:
+echo  - Run start.bat to start the development server
+echo  - Run build.bat to create production build
 echo.
-echo  ══════════════════════════════════════════════════
+echo  ================================================
 echo.
 
 pause

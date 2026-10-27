@@ -1,58 +1,61 @@
 @echo off
-chcp 65001 >nul
-title STEELMETRICS - Build Production
-color 0A
+REM ============================================
+REM STEELMETRICS - Build Production
+REM ============================================
+
+REM Go to the directory where this bat file is located
+cd /d "%~dp0"
 
 echo.
-echo  ╔══════════════════════════════════════════════════╗
-echo  ║        STEELMETRICS - Build Production           ║
-echo  ║   ساخت نسخه نهایی برای استقرار                  ║
-echo  ╚══════════════════════════════════════════════════╝
+echo  ================================================
+echo     STEELMETRICS - Build Production
+echo     Building optimized files for deployment
+echo  ================================================
 echo.
 
 REM Check Node.js
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo  [ERROR] Node.js نصب نیست!
+    echo  [ERROR] Node.js is not installed!
     pause
     exit /b 1
 )
 
-echo  [INFO] شروع ساخت نسخه production...
+echo  [INFO] Starting production build...
 echo.
 
 REM Install dependencies if needed
 if not exist "node_modules\" (
-    echo  [INFO] نصب وابستگی‌ها...
+    echo  [INFO] Installing dependencies...
     call npm install
 )
 
 REM Build
-echo  [INFO] در حال build...
+echo  [INFO] Building...
 echo.
 call npm run build
 
 if %errorlevel% neq 0 (
     echo.
-    echo  [ERROR] خطا در build!
+    echo  [ERROR] Build failed!
     pause
     exit /b 1
 )
 
 echo.
-echo  ══════════════════════════════════════════════════
+echo  ================================================
 echo.
-echo  [✓] Build با موفقیت انجام شد!
+echo  [OK] Build completed successfully!
 echo.
-echo  فایل‌های خروجی در پوشه dist/ قرار دارند.
+echo  Output files are in the "dist" folder.
 echo.
-echo  برای استقرار:
-echo  1. محتویات پوشه dist/ را روی سرور وب کپی کنید
-echo  2. سرور وب را روی HTTPS تنظیم کنید
-echo  3. Backend API را راه‌اندازی کنید
-echo  4. پایگاه داده PostgreSQL را ایجاد کنید
+echo  To deploy:
+echo  1. Copy contents of dist/ to your web server
+echo  2. Configure web server for HTTPS
+echo  3. Set up Backend API
+echo  4. Create PostgreSQL database
 echo.
-echo  ══════════════════════════════════════════════════
+echo  ================================================
 echo.
 
 pause
