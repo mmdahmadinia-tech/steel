@@ -7,22 +7,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [showDebug, setShowDebug] = useState(false);
+  const { login, resetUsers } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
     setTimeout(() => {
-      const success = login(username, password);
+      const success = login(username.trim(), password.trim());
       if (success) {
         navigate('/dashboard');
       } else {
         setError('نام کاربری یا رمز عبور اشتباه است');
       }
       setLoading(false);
-    }, 500);
+    }, 300);
+  };
+
+  const handleReset = () => {
+    if (confirm('آیا مطمئن هستید؟ تمام کاربران به حالت پیش‌فرض بازنشانی می‌شوند.')) {
+      resetUsers();
+      setError('');
+      alert('کاربران بازنشانی شدند. اکنون می‌توانید با کاربران پیش‌فرض وارد شوید.');
+    }
   };
 
   return (
@@ -31,8 +41,7 @@ export default function LoginPage() {
     }}>
       {/* Animated Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Molten metal glow effects */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse" style={{
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20" style={{
           background: 'radial-gradient(circle, #ff6b00 0%, #ff4500 30%, transparent 70%)',
           animation: 'pulse 4s ease-in-out infinite',
         }}></div>
@@ -45,7 +54,6 @@ export default function LoginPage() {
           animation: 'pulse 5s ease-in-out infinite',
         }}></div>
         
-        {/* Sparks */}
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="absolute w-1 h-1 bg-orange-400 rounded-full opacity-60" style={{
             top: `${Math.random() * 100}%`,
@@ -108,6 +116,7 @@ export default function LoginPage() {
                 }}
                 placeholder="کد پرسنلی"
                 required
+                autoComplete="username"
               />
             </div>
 
@@ -124,6 +133,7 @@ export default function LoginPage() {
                 }}
                 placeholder="رمز عبور"
                 required
+                autoComplete="current-password"
               />
             </div>
 
@@ -150,6 +160,55 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="mt-6 pt-4 border-t border-orange-900/30 text-center">
             <p className="text-orange-300/60 text-xs">دفتر فنی و برنامه‌ریزی تولید</p>
+          </div>
+
+          {/* Debug Section */}
+          <div className="mt-4 pt-4 border-t border-orange-900/20">
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-xs text-orange-400/40 hover:text-orange-400/80 transition-colors"
+            >
+              {showDebug ? '▼' : '▶'} راهنمای ورود
+            </button>
+            
+            {showDebug && (
+              <div className="mt-3 text-xs text-orange-300/70 space-y-2">
+                <p className="font-bold text-orange-300">کاربران پیش‌فرض:</p>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="bg-black/30 rounded p-2">
+                    <p className="text-orange-400">مدیر سایت</p>
+                    <p>کاربری: 19029</p>
+                    <p>رمز: 19029</p>
+                  </div>
+                  <div className="bg-black/30 rounded p-2">
+                    <p className="text-orange-400">کاربر EAF</p>
+                    <p>کاربری: 19377</p>
+                    <p>رمز: 19377</p>
+                  </div>
+                  <div className="bg-black/30 rounded p-2">
+                    <p className="text-orange-400">کاربر LF</p>
+                    <p>کاربری: 19513</p>
+                    <p>رمز: 19513</p>
+                  </div>
+                  <div className="bg-black/30 rounded p-2">
+                    <p className="text-orange-400">کاربر CCM</p>
+                    <p>کاربری: 19616</p>
+                    <p>رمز: 19616</p>
+                  </div>
+                  <div className="bg-black/30 rounded p-2">
+                    <p className="text-orange-400">تحلیلگر</p>
+                    <p>کاربری: 19452</p>
+                    <p>رمز: 19452</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="mt-3 w-full bg-red-900/30 hover:bg-red-900/50 text-red-300 text-xs py-2 px-3 rounded transition-colors"
+                >
+                  🔄 بازنشانی کاربران به حالت پیش‌فرض
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
