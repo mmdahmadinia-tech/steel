@@ -1,7 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { STEEL_GRADES, SHIFTS, WORKING_GROUPS } from '../data/mockData';
+import { STEEL_GRADES, SHIFTS } from '../data/mockData';
+
+const WORKING_GROUPS = [
+  'کوره-تولید',
+  'کوره-برق',
+  'کوره-مکانیک',
+  'ریخته‌گری-تولید',
+  'ریخته‌گری-مکانیک',
+  'ریخته‌گری-برق',
+  'انرژی و سیالات',
+  'برنامه‌ریزی شده',
+  'نسوز',
+  'گهرترابر',
+  'متریال و هندلینگ',
+  'فیوم',
+  'پست برق',
+  'سایر',
+];
+
+const PRE_STOPPAGE_REASONS = [
+  'SETUP TIME',
+  'تعویض الکترود فاز1',
+  'تعویض الکترود فاز2',
+  'تعویض الکترود فاز3',
+  'تنظیم فاز1',
+  'تنظیم فاز2',
+  'تنظیم فاز3',
+  'تنظیم هرسه فاز',
+];
 
 export default function EAFPage() {
   const { heats, addHeat, updateHeat, getNextHeatId } = useData();
@@ -11,6 +39,13 @@ export default function EAFPage() {
   const [saved, setSaved] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [refractoryCounters, setRefractoryCounters] = useState({ walls: 0, centerPiece: 0, bottom: 0, taphole: 0 });
+
+  // Set current date on mount
+  useEffect(() => {
+    const today = new Date();
+    const persianDate = today.toLocaleDateString('fa-IR');
+    setFormData((prev: any) => ({ ...prev, date: persianDate }));
+  }, []);
 
   const tabs = [
     { id: 'general', label: 'اطلاعات ذوب' },
@@ -56,14 +91,19 @@ export default function EAFPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const calculateMinutes = (from: string, till: string): number => {
-    if (!from || !till) return 0;
-    const [fh, fm] = from.split(':').map(Number);
-    const [th, tm] = till.split(':').map(Number);
-    const fromMin = fh * 60 + fm;
-    let tillMin = th * 60 + tm;
-    if (tillMin < fromMin) tillMin += 24 * 60;
-    return tillMin - fromMin;
+  // Calculate POWER OFF = sum of stoppages + tapping duration
+  const calculatePowerOff = () => {
+    const preStoppagesTotal = (formData.preStoppages || []).reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
+    const duringStoppagesTotal = (formData.stoppages || []).reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
+    const tappingDuration = formData.tappingDuration || 0;
+    return preStoppagesTotal + duringStoppagesTotal + tappingDuration;
+  };
+
+  // Calculate TAP TO TAP = POWER OFF + POWER ON
+  const calculateTapToTap = () => {
+    const powerOff = calculatePowerOff();
+    const powerOn = formData.powerOn || 0;
+    return powerOff + powerOn;
   };
 
   return (
@@ -101,10 +141,12 @@ export default function EAFPage() {
               <div><label className="label-field">شیفت</label><select className="input-field" value={formData.shift || ''} onChange={e => setFormData({...formData, shift: e.target.value})}><option value="">انتخاب</option>{SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}</select></div>
               <div><label className="label-field">Heat ID</label><input type="text" className="input-field" value={selectedHeatId || getNextHeatId()} disabled /></div>
               <div><label className="label-field">گرید فولاد</label><select className="input-field" value={formData.steelGrade || ''} onChange={e => setFormData({...formData, steelGrade: e.target.value})}><option value="">انتخاب</option>{STEEL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}</select></div>
-              <div><label className="label-field">Power On</label><input type="time" className="input-field" value={formData.powerOn || ''} onChange={e => setFormData({...formData, powerOn: e.target.value})} /></div>
-              <div><label className="label-field">Power Off</label><input type="time" className="input-field" value={formData.powerOff || ''} onChange={e => setFormData({...formData, powerOff: e.target.value})} /></div>
-              <div><label className="label-field">TAP TO TAP (دقیقه)</label><input type="number" className="input-field" value={formData.tapToTap || ''} onChange={e => setFormData({...formData, tapToTap: Number(e.target.value)})} /></div>
+              <div><label className="label-field">Power On (دقیقه)</label><input type="number" className="input-field" value={formData.powerOn || ''} onChange={e => setFormData({...formData, powerOn: Number(e.target.value)})} placeholder="دقیقه" /></div>
+              <div><label className="label-field">Power Off (دقیقه) - محاسبه خودکار</label><input type="number" className="input-field bg-gray-100" value={calculatePowerOff()} readOnly /></div>
+              <div><label className="label-field">TAP TO TAP (دقیقه) - محاسبه خودکار</label><input type="number" className="input-field bg-gray-100" value={calculateTapToTap()} readOnly /></div>
               <div><label className="label-field">وزن تخلیه (تن)</label><input type="number" className="input-field" value={formData.tappingWeight || ''} onChange={e => setFormData({...formData, tappingWeight: Number(e.target.value)})} /></div>
+              <div><label className="label-field">مدت تخلیه (دقیقه)</label><input type="number" className="input-field" value={formData.tappingDuration || ''} onChange={e => setFormData({...formData, tappingDuration: Number(e.target.value)})} /></div>
+              <div><label className="label-field">En.Cou (MWh)</label><input type="number" className="input-field" step="0.1" value={formData.enCou || ''} onChange={e => setFormData({...formData, enCou: Number(e.target.value)})} /></div>
             </div>
           )}
 
@@ -118,41 +160,19 @@ export default function EAFPage() {
               ].map(item => (
                 <div key={item.key} className="border border-gray-200 rounded-lg p-4">
                   <label className="label-field">{item.label}</label>
-                  <input type="number" className="input-field mb-2" value={(formData as any)[item.key] || ''} onChange={e => setFormData({...formData, [item.key]: Number(e.target.value)})} placeholder="عدد" />
-                  <button onClick={() => setRefractoryCounters({...refractoryCounters, [item.key]: 0})} className="text-xs text-red-600 hover:text-red-800">صفر کردن</button>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input type="number" className="input-field" value={(refractoryCounters as any)[item.key] || ''} onChange={e => setRefractoryCounters({...refractoryCounters, [item.key]: Number(e.target.value)})} placeholder="عدد" />
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">مقدار فعلی: {(refractoryCounters as any)[item.key] || 0}</p>
+                  <button onClick={() => setRefractoryCounters({...refractoryCounters, [item.key]: 0})} className="text-xs text-red-600 hover:text-red-800 bg-red-50 px-2 py-1 rounded">صفر کردن</button>
                 </div>
               ))}
             </div>
           )}
 
-          {activeTab === 'preStoppages' && <StoppagesTable title="توقفات قبل از شروع" formData={formData} setFormData={setFormData} field="preStoppages" calculateMinutes={calculateMinutes} />}
-          {activeTab === 'process' && (
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-bold text-gray-700 mb-4">SAMPLE TIME</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  <div><label className="label-field">Time</label><input type="time" className="input-field" /></div>
-                  <div><label className="label-field">En.Cou (MWh)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
-                  <div><label className="label-field">DRI (Ton)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Briquet (Ton)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Dolomite (Kg)</label><input type="number" className="input-field" /></div>
-                </div>
-              </div>
-              <div className="border-t pt-6">
-                <h4 className="font-bold text-gray-700 mb-4">Tapping Start</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  <div><label className="label-field">Time</label><input type="time" className="input-field" /></div>
-                  <div><label className="label-field">En.Cou (MWh)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
-                  <div><label className="label-field">DRI (Ton)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Briquet (Ton)</label><input type="number" className="input-field" step="0.1" /></div>
-                  <div><label className="label-field">Dolomite (Kg)</label><input type="number" className="input-field" /></div>
-                </div>
-              </div>
-            </div>
-          )}
-          {activeTab === 'stoppages' && <StoppagesTable title="توقفات حین کار" formData={formData} setFormData={setFormData} field="stoppages" calculateMinutes={calculateMinutes} />}
+          {activeTab === 'preStoppages' && <PreStoppagesTable formData={formData} setFormData={setFormData} />}
+          {activeTab === 'process' && <ProcessDescription formData={formData} setFormData={setFormData} />}
+          {activeTab === 'stoppages' && <DuringStoppagesTable formData={formData} setFormData={setFormData} />}
           {activeTab === 'ladle' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div><label className="label-field">Ladle Number</label><select className="input-field"><option value="">انتخاب</option>{['1','2','3','4','5','6','7','8','9'].map(n => <option key={n} value={n}>{n}</option>)}</select></div>
@@ -221,8 +241,18 @@ export default function EAFPage() {
   );
 }
 
-function StoppagesTable({ title, formData, setFormData, field, calculateMinutes }: any) {
-  const [stoppages, setStoppages] = useState<any[]>(Array(7).fill({ from: '', till: '', minutes: 0, workingGroup: '', description: '' }));
+function PreStoppagesTable({ formData, setFormData }: any) {
+  const [stoppages, setStoppages] = useState<any[]>(formData.preStoppages || Array(7).fill({ from: '', till: '', minutes: 0, reason: '', description: '' }));
+
+  const calculateMinutes = (from: string, till: string): number => {
+    if (!from || !till) return 0;
+    const [fh, fm] = from.split(':').map(Number);
+    const [th, tm] = till.split(':').map(Number);
+    const fromMin = fh * 60 + fm;
+    let tillMin = th * 60 + tm;
+    if (tillMin < fromMin) tillMin += 24 * 60;
+    return tillMin - fromMin;
+  };
 
   const updateStoppage = (index: number, key: string, value: any) => {
     const newStoppages = [...stoppages];
@@ -231,17 +261,79 @@ function StoppagesTable({ title, formData, setFormData, field, calculateMinutes 
       newStoppages[index].minutes = calculateMinutes(newStoppages[index].from, newStoppages[index].till);
     }
     setStoppages(newStoppages);
+    setFormData({ ...formData, preStoppages: newStoppages });
   };
 
   return (
     <div>
-      <h4 className="font-bold text-gray-700 mb-4">{title}</h4>
+      <h4 className="font-bold text-gray-700 mb-4">توقفات قبل از شروع</h4>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50"><tr>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">ردیف</th>
-            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">From</th>
-            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Till</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">From (HH:MM)</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Till (HH:MM)</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Minute</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">علت توقف</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Working Group</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Description</th>
+          </tr></thead>
+          <tbody className="divide-y">
+            {stoppages.map((s, i) => (
+              <tr key={i} className="hover:bg-gray-50">
+                <td className="px-3 py-2 text-gray-500">{i + 1}</td>
+                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.from} onChange={e => updateStoppage(i, 'from', e.target.value)} /></td>
+                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.till} onChange={e => updateStoppage(i, 'till', e.target.value)} /></td>
+                <td className="px-3 py-2"><input type="number" className="input-field w-20" value={s.minutes} readOnly /></td>
+                <td className="px-3 py-2">
+                  <input type="text" className="input-field w-40" list={`reasons-${i}`} value={s.reason} onChange={e => updateStoppage(i, 'reason', e.target.value)} placeholder="انتخاب یا تایپ کنید" />
+                  <datalist id={`reasons-${i}`}>
+                    {PRE_STOPPAGE_REASONS.map(r => <option key={r} value={r} />)}
+                  </datalist>
+                </td>
+                <td className="px-3 py-2"><select className="input-field w-40" value={s.workingGroup} onChange={e => updateStoppage(i, 'workingGroup', e.target.value)}><option value="">انتخاب</option>{WORKING_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
+                <td className="px-3 py-2"><input type="text" className="input-field w-48" value={s.description} onChange={e => updateStoppage(i, 'description', e.target.value)} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function DuringStoppagesTable({ formData, setFormData }: any) {
+  const [stoppages, setStoppages] = useState<any[]>(formData.stoppages || Array(7).fill({ from: '', till: '', minutes: 0, workingGroup: '', description: '' }));
+
+  const calculateMinutes = (from: string, till: string): number => {
+    if (!from || !till) return 0;
+    const [fh, fm] = from.split(':').map(Number);
+    const [th, tm] = till.split(':').map(Number);
+    const fromMin = fh * 60 + fm;
+    let tillMin = th * 60 + tm;
+    if (tillMin < fromMin) tillMin += 24 * 60;
+    return tillMin - fromMin;
+  };
+
+  const updateStoppage = (index: number, key: string, value: any) => {
+    const newStoppages = [...stoppages];
+    newStoppages[index] = { ...newStoppages[index], [key]: value };
+    if (key === 'from' || key === 'till') {
+      newStoppages[index].minutes = calculateMinutes(newStoppages[index].from, newStoppages[index].till);
+    }
+    setStoppages(newStoppages);
+    setFormData({ ...formData, stoppages: newStoppages });
+  };
+
+  return (
+    <div>
+      <h4 className="font-bold text-gray-700 mb-4">توقفات حین کار</h4>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">ردیف</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">From (HH:MM)</th>
+            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Till (HH:MM)</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Minute</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Working Group</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Description</th>
@@ -259,6 +351,73 @@ function StoppagesTable({ title, formData, setFormData, field, calculateMinutes 
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function ProcessDescription({ formData, setFormData }: any) {
+  const [sampleData, setSampleData] = useState<any>(formData.sampleData || {});
+  const [tappingData, setTappingData] = useState<any>(formData.tappingData || {});
+
+  const updateSample = (key: string, value: any) => {
+    const newData = { ...sampleData, [key]: value };
+    setSampleData(newData);
+    setFormData({ ...formData, sampleData: newData });
+  };
+
+  const updateTapping = (key: string, value: any) => {
+    const newData = { ...tappingData, [key]: value };
+    setTappingData(newData);
+    setFormData({ ...formData, tappingData: newData });
+  };
+
+  const fields = [
+    { key: 'enCou', label: 'En. Cou (MWh)', step: '0.1' },
+    { key: 'tap', label: 'Tap', step: '1' },
+    { key: 'dri', label: 'DRI (Ton)', step: '0.1' },
+    { key: 'briquet', label: 'Briquet (Ton)', step: '0.1' },
+    { key: 'dolomite', label: 'Dolomite (Kg)', step: '1' },
+    { key: 'limeMHU', label: 'Lime MHU (Kg)', step: '1' },
+    { key: 'carbonMHU', label: 'Carbon MHU (Kg)', step: '1' },
+    { key: 'cpcMHU', label: 'CPC MHU (Kg)', step: '1' },
+    { key: 'cpcInjection', label: 'CPC Injection (Kg)', step: '1' },
+    { key: 'ch4', label: 'CH4 (Nm³)', step: '1' },
+    { key: 'oxygen', label: 'Oxygen (Nm³)', step: '1' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h4 className="font-bold text-gray-700 mb-4">SAMPLE TIME</h4>
+        <div className="mb-4">
+          <label className="label-field">زمان نمونه‌برداری (HH:MM)</label>
+          <input type="time" className="input-field w-40" value={sampleData.time || ''} onChange={e => updateSample('time', e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {fields.map(f => (
+            <div key={f.key}>
+              <label className="label-field">{f.label}</label>
+              <input type="number" className="input-field" step={f.step} value={sampleData[f.key] || ''} onChange={e => updateSample(f.key, Number(e.target.value))} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t pt-6">
+        <h4 className="font-bold text-gray-700 mb-4">TAPPING START</h4>
+        <div className="mb-4">
+          <label className="label-field">زمان شروع تخلیه (HH:MM)</label>
+          <input type="time" className="input-field w-40" value={tappingData.time || ''} onChange={e => updateTapping('time', e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {fields.map(f => (
+            <div key={f.key}>
+              <label className="label-field">{f.label}</label>
+              <input type="number" className="input-field" step={f.step} value={tappingData[f.key] || ''} onChange={e => updateTapping(f.key, Number(e.target.value))} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { SHIFTS } from '../data/mockData';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -9,29 +10,37 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // EAF Dashboard
   if (user.role === 'eaf_user') return <EAFDashboard heats={heats} />;
   if (user.role === 'lf_user') return <LFDashboard heats={heats} />;
   if (user.role === 'ccm_user') return <CCMDashboard heats={heats} />;
   if (user.role === 'analyst') return <AnalystDashboard heats={heats} />;
   
-  // Admin Dashboard
   return <AdminDashboard heats={heats} />;
 }
 
 function EAFDashboard({ heats }: { heats: any[] }) {
-  const eafHeats = heats.filter(h => h.eafStatus === 'completed' && h.eafData);
-  const currentMonth = new Date().getMonth();
-  
-  const totalHeats = eafHeats.length;
-  const totalTonnage = eafHeats.reduce((sum, h) => sum + (h.eafData?.tappingWeight || 0), 0);
-  const totalKWH = eafHeats.reduce((sum, h) => sum + (h.eafData?.enCou || 0), 0);
-  const avgKWHPerTon = totalTonnage > 0 ? (totalKWH / totalTonnage * 1000).toFixed(2) : '0';
-  const avgPowerOn = eafHeats.length > 0 ? (eafHeats.reduce((sum, h) => sum + (h.eafData?.tapToTap || 0), 0) / eafHeats.length).toFixed(1) : '0';
-  const avgTapToTap = eafHeats.length > 0 ? (eafHeats.reduce((sum, h) => sum + (h.eafData?.tapToTap || 0), 0) / eafHeats.length).toFixed(1) : '0';
+  const [filterDate, setFilterDate] = useState('');
+  const [filterShift, setFilterShift] = useState('');
+  const [filterHeatId, setFilterHeatId] = useState('');
 
-  // Material waste calculation
-  const materials = eafHeats.reduce((acc, h) => {
+  const eafHeats = heats.filter(h => h.eafStatus === 'completed' && h.eafData);
+  
+  // Apply filters
+  const filteredHeats = eafHeats.filter(h => {
+    const matchDate = !filterDate || h.date.includes(filterDate);
+    const matchShift = !filterShift || h.shift === filterShift;
+    const matchHeatId = !filterHeatId || h.heatId.includes(filterHeatId);
+    return matchDate && matchShift && matchHeatId;
+  });
+
+  const totalHeats = filteredHeats.length;
+  const totalTonnage = filteredHeats.reduce((sum, h) => sum + (h.eafData?.tappingWeight || 0), 0);
+  const totalKWH = filteredHeats.reduce((sum, h) => sum + (h.eafData?.enCou || 0), 0);
+  const avgKWHPerTon = totalTonnage > 0 ? (totalKWH / totalTonnage * 1000).toFixed(2) : '0';
+  const avgPowerOn = filteredHeats.length > 0 ? (filteredHeats.reduce((sum, h) => sum + (h.eafData?.powerOn || 0), 0) / filteredHeats.length).toFixed(1) : '0';
+  const avgTapToTap = filteredHeats.length > 0 ? (filteredHeats.reduce((sum, h) => sum + (h.eafData?.tapToTap || 0), 0) / filteredHeats.length).toFixed(1) : '0';
+
+  const materials = filteredHeats.reduce((acc, h) => {
     const m = h.eafData?.materials || {};
     return {
       feMn: (acc.feMn || 0) + (m.feMn || 0),
@@ -46,6 +55,23 @@ function EAFDashboard({ heats }: { heats: any[] }) {
 
   const totalFerroAlloys = (materials.feMn || 0) + (materials.feSiMn || 0) + (materials.feSi || 0);
 
+  // Chart data
+  const tonnageChartData = filteredHeats.map(h => ({
+    name: h.heatId,
+    tonnage: h.eafData?.tappingWeight || 0,
+  }));
+
+  const kwhChartData = filteredHeats.map(h => ({
+    name: h.heatId,
+    kwhPerTon: h.eafData?.tappingWeight > 0 ? ((h.eafData?.enCou || 0) / h.eafData.tappingWeight * 1000).toFixed(2) : 0,
+  }));
+
+  const powerOnChartData = filteredHeats.map(h => ({
+    name: h.heatId,
+    powerOn: h.eafData?.powerOn || 0,
+    tapToTap: h.eafData?.tapToTap || 0,
+  }));
+
   return (
     <div className="space-y-6">
       <div className="card bg-gradient-to-l from-blue-600 to-blue-700 text-white">
@@ -53,13 +79,94 @@ function EAFDashboard({ heats }: { heats: any[] }) {
         <p className="text-blue-100 mt-1">تحلیل عملکرد و مصرف مواد</p>
       </div>
 
+      {/* Filters */}
+      <div className="card">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">🔍 فیلترها</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="label-field">تاریخ</label>
+            <input type="text" className="input-field" value={filterDate} onChange={e => setFilterDate(e.target.value)} placeholder="1403/09" />
+          </div>
+          <div>
+            <label className="label-field">شیفت</label>
+            <select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}>
+              <option value="">همه شیفت‌ها</option>
+              {SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">شماره ذوب</label>
+            <input type="text" className="input-field" value={filterHeatId} onChange={e => setFilterHeatId(e.target.value)} placeholder="Heat ID" />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard title="تعداد ذوب‌های ماه جاری" value={totalHeats.toString()} icon="🔥" color="blue" />
+        <StatCard title="تعداد ذوب‌ها" value={totalHeats.toString()} icon="🔥" color="blue" />
         <StatCard title="کل تناژ مذاب" value={`${totalTonnage} تن`} icon="⚖️" color="green" />
         <StatCard title="میانگین مصرف KWH/T" value={avgKWHPerTon} icon="⚡" color="yellow" />
         <StatCard title="میانگین Power On" value={`${avgPowerOn} دقیقه`} icon="🔌" color="purple" />
         <StatCard title="میانگین TAP TO TAP" value={`${avgTapToTap} دقیقه`} icon="⏱️" color="orange" />
         <StatCard title="جمع مصرف فروآلیاژها" value={`${totalFerroAlloys} Kg`} icon="🧱" color="red" />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">📊 نمودار تناژ و تعداد ذوب‌ها</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={tonnageChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="tonnage" name="تناژ (تن)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">⚡ نمودار KWH/TON</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={kwhChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="kwhPerTon" name="KWH/TON" stroke="#f59e0b" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">🔌 نمودار Power On و TAP TO TAP</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={powerOnChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="powerOn" name="Power On (دقیقه)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="tapToTap" name="TAP TO TAP (دقیقه)" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">📈 روند مصرف انرژی</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={kwhChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Area type="monotone" dataKey="kwhPerTon" name="KWH/TON" stroke="#ef4444" fill="#fee2e2" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       <div className="card">
@@ -80,7 +187,6 @@ function EAFDashboard({ heats }: { heats: any[] }) {
 
 function LFDashboard({ heats }: { heats: any[] }) {
   const lfHeats = heats.filter(h => h.lfStatus === 'completed' && h.lfData && h.eafData);
-  
   const totalTonnage = lfHeats.reduce((sum, h) => sum + (h.eafData?.tappingWeight || 0), 0);
   
   const additives = lfHeats.reduce((acc, h) => {
@@ -126,7 +232,6 @@ function LFDashboard({ heats }: { heats: any[] }) {
 
 function CCMDashboard({ heats }: { heats: any[] }) {
   const ccmHeats = heats.filter(h => h.ccmStatus === 'completed' && h.ccmData);
-  
   const totalBreaks = ccmHeats.reduce((sum, h) => sum + (h.ccmData?.lineBreaks || 0), 0);
   const minSequence = ccmHeats.length > 0 ? Math.min(...ccmHeats.map(h => h.ccmData?.sequenceHeats || 0)) : 0;
   const maxSequence = ccmHeats.length > 0 ? Math.max(...ccmHeats.map(h => h.ccmData?.sequenceHeats || 0)) : 0;
