@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { SHIFTS } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
+import JalaliDatePicker from '../components/JalaliDatePicker';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -19,27 +20,53 @@ export default function DashboardPage() {
 }
 
 function EAFDashboard({ heats }: { heats: any[] }) {
-  const [filterDate, setFilterDate] = useState('');
-  const [filterShift, setFilterShift] = useState('');
+  const [filterDateStart, setFilterDateStart] = useState('');
+  const [filterDateEnd, setFilterDateEnd] = useState('');
   const [filterHeatId, setFilterHeatId] = useState('');
+  const [filterShift, setFilterShift] = useState('');
 
   const eafHeats = heats.filter(h => h.eafStatus === 'completed' && h.eafData);
   
   // Apply filters
   const filteredHeats = eafHeats.filter(h => {
-    const matchDate = !filterDate || h.date.includes(filterDate);
-    const matchShift = !filterShift || h.shift === filterShift;
     const matchHeatId = !filterHeatId || h.heatId.includes(filterHeatId);
-    return matchDate && matchShift && matchHeatId;
+    const matchShift = !filterShift || h.shift === filterShift;
+    
+    let matchDate = true;
+    if (filterDateStart || filterDateEnd) {
+      const heatDate = h.date.replace(/\//g, '');
+      const startDate = filterDateStart ? filterDateStart.replace(/\//g, '') : '';
+      const endDate = filterDateEnd ? filterDateEnd.replace(/\//g, '') : '';
+      
+      if (startDate && endDate) {
+        matchDate = heatDate >= startDate && heatDate <= endDate;
+      } else if (startDate) {
+        matchDate = heatDate >= startDate;
+      } else if (endDate) {
+        matchDate = heatDate <= endDate;
+      }
+    }
+    
+    return matchDate && matchHeatId && matchShift;
   });
 
   const totalHeats = filteredHeats.length;
   const totalTonnage = filteredHeats.reduce((sum, h) => sum + (h.eafData?.tappingWeight || 0), 0);
   const totalKWH = filteredHeats.reduce((sum, h) => sum + (h.eafData?.enCou || 0), 0);
-  const avgKWHPerTon = totalTonnage > 0 ? (totalKWH / totalTonnage * 1000).toFixed(2) : '0';
+  const avgKWHPerTon = totalTonnage > 0 ? ((totalKWH / totalTonnage) * 1000).toFixed(2) : '0';
   const avgPowerOn = filteredHeats.length > 0 ? (filteredHeats.reduce((sum, h) => sum + (h.eafData?.powerOn || 0), 0) / filteredHeats.length).toFixed(1) : '0';
   const avgTapToTap = filteredHeats.length > 0 ? (filteredHeats.reduce((sum, h) => sum + (h.eafData?.tapToTap || 0), 0) / filteredHeats.length).toFixed(1) : '0';
 
+  // Chart data
+  const chartData = filteredHeats.map(h => ({
+    name: h.heatId,
+    tonnage: h.eafData?.tappingWeight || 0,
+    kwhPerTon: h.eafData?.enCou ? ((h.eafData.enCou / (h.eafData.tappingWeight || 1)) * 1000).toFixed(2) : 0,
+    powerOn: h.eafData?.powerOn || 0,
+    tapToTap: h.eafData?.tapToTap || 0,
+  }));
+
+  // Material data
   const materials = filteredHeats.reduce((acc, h) => {
     const m = h.eafData?.materials || {};
     return {
@@ -55,22 +82,38 @@ function EAFDashboard({ heats }: { heats: any[] }) {
 
   const totalFerroAlloys = (materials.feMn || 0) + (materials.feSiMn || 0) + (materials.feSi || 0);
 
-  // Chart data
-  const tonnageChartData = filteredHeats.map(h => ({
-    name: h.heatId,
-    tonnage: h.eafData?.tappingWeight || 0,
-  }));
+  const exportToExcel = () => {
+    const headers = ['Heat ID', 'Date', 'Shift', 'Tonnage', 'KWH/T', 'Power On', 'Tap to Tap', 'FeMn', 'FeSiMn', 'FeSi', 'Lime', 'Carbon', 'CPC Injection', 'Oxygen'];
+    const rows = filteredHeats.map(h => {
+      const m = h.eafData?.materials || {};
+      return [
+        h.heatId,
+        h.date,
+        h.shift,
+        h.eafData?.tappingWeight || 0,
+        h.eafData?.enCou ? ((h.eafData.enCou / (h.eafData.tappingWeight || 1)) * 1000).toFixed(2) : 0,
+        h.eafData?.powerOn || 0,
+        h.eafData?.tapToTap || 0,
+        m.feMn || 0,
+        m.feSiMn || 0,
+        m.feSi || 0,
+        m.lime || 0,
+        m.carbon || 0,
+        m.cpcInjection || 0,
+        m.oxygen || 0
+      ];
+    });
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `eaf_dashboard_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
 
-  const kwhChartData = filteredHeats.map(h => ({
-    name: h.heatId,
-    kwhPerTon: h.eafData?.tappingWeight > 0 ? ((h.eafData?.enCou || 0) / h.eafData.tappingWeight * 1000).toFixed(2) : 0,
-  }));
-
-  const powerOnChartData = filteredHeats.map(h => ({
-    name: h.heatId,
-    powerOn: h.eafData?.powerOn || 0,
-    tapToTap: h.eafData?.tapToTap || 0,
-  }));
+  const exportToPDF = () => {
+    window.print();
+  };
 
   return (
     <div className="space-y-6">
@@ -82,32 +125,43 @@ function EAFDashboard({ heats }: { heats: any[] }) {
       {/* Filters */}
       <div className="card">
         <h3 className="text-lg font-bold text-gray-800 mb-4">🔍 فیلترها</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="label-field">تاریخ</label>
-            <input type="text" className="input-field" value={filterDate} onChange={e => setFilterDate(e.target.value)} placeholder="1403/09" />
-          </div>
-          <div>
-            <label className="label-field">شیفت</label>
-            <select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}>
-              <option value="">همه شیفت‌ها</option>
-              {SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}
-            </select>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <JalaliDatePicker
+            label="تاریخ شروع"
+            value={filterDateStart}
+            onChange={setFilterDateStart}
+          />
+          <JalaliDatePicker
+            label="تاریخ پایان"
+            value={filterDateEnd}
+            onChange={setFilterDateEnd}
+          />
           <div>
             <label className="label-field">شماره ذوب</label>
             <input type="text" className="input-field" value={filterHeatId} onChange={e => setFilterHeatId(e.target.value)} placeholder="Heat ID" />
           </div>
+          <div>
+            <label className="label-field">شیفت</label>
+            <select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}>
+              <option value="">همه</option>
+              {SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-end gap-2">
+            <button onClick={exportToExcel} className="btn-primary flex-1">📥 Excel</button>
+            <button onClick={exportToPDF} className="btn-secondary flex-1">📄 PDF</button>
+          </div>
         </div>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard title="تعداد ذوب‌ها" value={totalHeats.toString()} icon="🔥" color="blue" />
         <StatCard title="کل تناژ مذاب" value={`${totalTonnage} تن`} icon="⚖️" color="green" />
-        <StatCard title="میانگین مصرف KWH/T" value={avgKWHPerTon} icon="⚡" color="yellow" />
+        <StatCard title="میانگین KWH/T" value={avgKWHPerTon} icon="⚡" color="yellow" />
         <StatCard title="میانگین Power On" value={`${avgPowerOn} دقیقه`} icon="🔌" color="purple" />
         <StatCard title="میانگین TAP TO TAP" value={`${avgTapToTap} دقیقه`} icon="⏱️" color="orange" />
-        <StatCard title="جمع مصرف فروآلیاژها" value={`${totalFerroAlloys} Kg`} icon="🧱" color="red" />
+        <StatCard title="جمع فروآلیاژها" value={`${totalFerroAlloys} Kg`} icon="🧱" color="red" />
       </div>
 
       {/* Charts */}
@@ -115,7 +169,7 @@ function EAFDashboard({ heats }: { heats: any[] }) {
         <div className="card">
           <h3 className="text-lg font-bold text-gray-800 mb-4">📊 نمودار تناژ و تعداد ذوب‌ها</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={tonnageChartData}>
+            <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -129,46 +183,47 @@ function EAFDashboard({ heats }: { heats: any[] }) {
         <div className="card">
           <h3 className="text-lg font-bold text-gray-800 mb-4">⚡ نمودار KWH/TON</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={kwhChartData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="kwhPerTon" name="KWH/TON" stroke="#f59e0b" strokeWidth={2} />
+              <Line type="monotone" dataKey="kwhPerTon" name="KWH/T" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">🔌 نمودار Power On و TAP TO TAP</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4">🔌 نمودار Power On</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={powerOnChartData}>
+            <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="powerOn" name="Power On (دقیقه)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="tapToTap" name="TAP TO TAP (دقیقه)" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area type="monotone" dataKey="powerOn" name="Power On (دقیقه)" stroke="#8b5cf6" fill="#ede9fe" />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">📈 روند مصرف انرژی</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4">⏱️ نمودار TAP TO TAP</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={kwhChartData}>
+            <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Area type="monotone" dataKey="kwhPerTon" name="KWH/TON" stroke="#ef4444" fill="#fee2e2" />
+              <Legend />
+              <Area type="monotone" dataKey="tapToTap" name="TAP TO TAP (دقیقه)" stroke="#10b981" fill="#d1fae5" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
+      {/* Materials */}
       <div className="card">
         <h3 className="text-lg font-bold text-gray-800 mb-4">📊 پرتن مصرفی مواد</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
