@@ -43,12 +43,26 @@ export default function AllEAFHeatsPage() {
     const h = heat;
     const eaf = h.eafData;
 
+    // Header
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['گزارش کامل ذوب', h.heatId]);
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['']);
+    
+    // General Info
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ اطلاعات عمومی                                          │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
     rows.push(['Heat ID', h.heatId]);
     rows.push(['Date', h.date]);
     rows.push(['Shift', h.shift]);
     rows.push(['Steel Grade', h.steelGrade]);
     rows.push(['']);
-    rows.push(['=== EAF Data ===']);
+    
+    // EAF Data - General
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ اطلاعات کوره قوس الکتریکی (EAF)                        │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
     rows.push(['Heat Start Time', eaf.heatStartTime || '']);
     rows.push(['Power On (min)', eaf.powerOn]);
     rows.push(['Power Off (min)', eaf.powerOff]);
@@ -57,7 +71,7 @@ export default function AllEAFHeatsPage() {
     rows.push(['Tapping Start Time', eaf.tappingStartTime]);
     rows.push(['Tapping End Time', eaf.tappingEndTime]);
     rows.push(['Tapping Duration (min)', eaf.tappingDuration]);
-    rows.push(['Carbon Percent (Sulco)', eaf.carbonPercent]);
+    rows.push(['Carbon Percent (Sulco) %', eaf.carbonPercent]);
     rows.push(['PPM', eaf.ppm]);
     rows.push(['']);
     
@@ -149,19 +163,40 @@ export default function AllEAFHeatsPage() {
     }
 
     if (eaf.electrodeStatus) {
-      rows.push(['--- Electrode Status ---']);
-      rows.push(['Phase 1', eaf.electrodeStatus.phase1?.join(', ') || '']);
-      rows.push(['Phase 2', eaf.electrodeStatus.phase2?.join(', ') || '']);
-      rows.push(['Phase 3', eaf.electrodeStatus.phase3?.join(', ') || '']);
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ وضعیت الکترودها                                        │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['Phase 1', eaf.electrodeStatus.phase1?.join(', ') || '-']);
+      rows.push(['Phase 2', eaf.electrodeStatus.phase2?.join(', ') || '-']);
+      rows.push(['Phase 3', eaf.electrodeStatus.phase3?.join(', ') || '-']);
+      rows.push(['']);
+    }
+
+    if (eaf.scrapBuckets && eaf.scrapBuckets.length > 0) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ سبدهای قراضه                                           │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      eaf.scrapBuckets.forEach((bucket: any, i: number) => {
+        if (bucket.bucketNumber || bucket.tonnage) {
+          rows.push([`Bucket ${i + 1}`, `Number: ${bucket.bucketNumber || '-'}`, `Tonnage: ${bucket.tonnage || '-'} Ton`]);
+        }
+      });
       rows.push(['']);
     }
 
     if (eaf.recordingOperator || eaf.shiftSupervisor || eaf.supervisorNotes) {
-      rows.push(['--- Recording Info ---']);
-      rows.push(['Recording Operator', eaf.recordingOperator || '']);
-      rows.push(['Shift Supervisor', eaf.shiftSupervisor || '']);
-      rows.push(['Supervisor Notes', eaf.supervisorNotes || '']);
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ اطلاعات ثبت                                            │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['Recording Operator', eaf.recordingOperator || '-']);
+      rows.push(['Shift Supervisor', eaf.shiftSupervisor || '-']);
+      rows.push(['Supervisor Notes', eaf.supervisorNotes || '-']);
+      rows.push(['']);
     }
+
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['End of Report']);
+    rows.push(['═══════════════════════════════════════════════════════════']);
 
     const csv = rows.map(row => row.join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });

@@ -96,10 +96,10 @@ export default function EAFPage() {
           tappingWeight: d.tappingWeight || 0,
           carbonPercent: d.carbonPercent || 0,
           ppm: d.ppm || 0,
-          walls: d.refractoryCounters?.walls || 0,
-          centerPiece: d.refractoryCounters?.centerPiece || 0,
-          bottom: d.refractoryCounters?.bottom || 0,
-          taphole: d.refractoryCounters?.taphole || 0,
+          walls: d.refractoryCounters?.walls ?? 0,
+          centerPiece: d.refractoryCounters?.centerPiece ?? 0,
+          bottom: d.refractoryCounters?.bottom ?? 0,
+          taphole: d.refractoryCounters?.taphole ?? 0,
           dri: d.materials?.dri || 0,
           briquet: d.materials?.briquet || 0,
           feMn: d.materials?.feMn || 0,
@@ -162,8 +162,15 @@ export default function EAFPage() {
       const prev = previousHeats[0];
       const prevRefractory = (prev?.eafData as any)?.refractoryCounters || { walls: 0, centerPiece: 0, bottom: 0, taphole: 0 };
       
-      console.log('Previous refractory:', prevRefractory);
+      console.log('=== NEW HEAT - Auto-increment Refractory ===');
       console.log('Previous heat:', prev?.heatId);
+      console.log('Previous refractory values:', prevRefractory);
+      console.log('New values will be:', {
+        walls: (prevRefractory.walls || 0) + 1,
+        centerPiece: (prevRefractory.centerPiece || 0) + 1,
+        bottom: (prevRefractory.bottom || 0) + 1,
+        taphole: (prevRefractory.taphole || 0) + 1,
+      });
       
       setForm({
         date: getTodayJalali(),
