@@ -18,7 +18,7 @@ function calcMinutes(from: string, till: string): number {
 // Format today as Jalali
 function getTodayJalali(): string {
   const t = getToday();
-  return `${toFa(t.jy)}/${padFa(t.jm)}/${padFa(t.jd)}`;
+  return `${t.jy}/${padFa(t.jm).replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))}/${padFa(t.jd).replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))}`;
 }
 
 export default function EAFPage() {
@@ -39,7 +39,7 @@ export default function EAFPage() {
     tappingStartTime: '',
     tappingEndTime: '',
     tappingWeight: 0,
-    enCou: 0,
+    carbonPercent: 0, // درصد کربن (سلوکس)
     ppm: 0,
     // Refractory
     walls: 0, centerPiece: 0, bottom: 0, taphole: 0,
@@ -91,7 +91,7 @@ export default function EAFPage() {
           tappingStartTime: d.tappingStartTime || '',
           tappingEndTime: d.tappingEndTime || '',
           tappingWeight: d.tappingWeight || 0,
-          enCou: d.enCou || 0,
+          carbonPercent: d.carbonPercent || 0,
           ppm: d.ppm || 0,
           walls: d.refractoryCounters?.walls || 0,
           centerPiece: d.refractoryCounters?.centerPiece || 0,
@@ -167,7 +167,7 @@ export default function EAFPage() {
         tappingStartTime: '',
         tappingEndTime: '',
         tappingWeight: 0,
-        enCou: 0,
+        carbonPercent: 0,
         ppm: 0,
         walls: (prevRefractory.walls || 0) + 1,
         centerPiece: (prevRefractory.centerPiece || 0) + 1,
@@ -197,7 +197,7 @@ export default function EAFPage() {
         recordingOperator: '', shiftSupervisor: '', supervisorNotes: '',
       });
     }
-  }, [selectedHeatId, heats]);
+  }, [selectedHeatId]);
 
   // Auto-calculate derived values
   const calculated = useMemo(() => {
@@ -240,7 +240,7 @@ export default function EAFPage() {
       tappingStartTime: form.tappingStartTime,
       tappingEndTime: form.tappingEndTime,
       tappingDuration: calculated.tappingDuration,
-      enCou: form.enCou,
+      carbonPercent: form.carbonPercent,
       ppm: form.ppm,
       materials: {
         dri: form.dri, briquet: form.briquet,
@@ -417,8 +417,8 @@ export default function EAFPage() {
                 <input type="number" className="input-field" value={form.tappingWeight} onChange={e => setForm({...form, tappingWeight: Number(e.target.value)})} step="0.1" />
               </div>
               <div>
-                <label className="label-field">En.Cou (MWh)</label>
-                <input type="number" className="input-field" value={form.enCou} onChange={e => setForm({...form, enCou: Number(e.target.value)})} step="0.1" />
+                <label className="label-field">درصد کربن (سلوکس) %</label>
+                <input type="number" className="input-field" value={form.carbonPercent} onChange={e => setForm({...form, carbonPercent: Number(e.target.value)})} step="0.01" />
               </div>
               <div>
                 <label className="label-field">PPM</label>
@@ -514,7 +514,6 @@ export default function EAFPage() {
                 <h4 className="font-bold text-gray-700 mb-4">SAMPLE TIME</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   <div><label className="label-field">Time (24h)</label><input type="time" className="input-field" /></div>
-                  <div><label className="label-field">En.Cou (MWh)</label><input type="number" step="0.1" className="input-field" value={form.enCou} onChange={e => setForm({...form, enCou: Number(e.target.value)})} /></div>
                   <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
                   <div><label className="label-field">DRI (Ton)</label><input type="number" step="0.1" className="input-field" value={form.dri} onChange={e => setForm({...form, dri: Number(e.target.value)})} /></div>
                   <div><label className="label-field">Briquet (Ton)</label><input type="number" step="0.1" className="input-field" value={form.briquet} onChange={e => setForm({...form, briquet: Number(e.target.value)})} /></div>
@@ -531,7 +530,6 @@ export default function EAFPage() {
                 <h4 className="font-bold text-gray-700 mb-4">Tapping Start</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   <div><label className="label-field">Time (24h)</label><input type="time" className="input-field" value={form.tappingStartTime} onChange={e => setForm({...form, tappingStartTime: e.target.value})} /></div>
-                  <div><label className="label-field">En.Cou (MWh)</label><input type="number" step="0.1" className="input-field" /></div>
                   <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
                   <div><label className="label-field">DRI (Ton)</label><input type="number" step="0.1" className="input-field" value={form.t_dri} onChange={e => setForm({...form, t_dri: Number(e.target.value)})} /></div>
                   <div><label className="label-field">Briquet (Ton)</label><input type="number" step="0.1" className="input-field" value={form.t_briquet} onChange={e => setForm({...form, t_briquet: Number(e.target.value)})} /></div>
@@ -674,18 +672,36 @@ export default function EAFPage() {
                   {['c', 'si', 'mn', 'p', 's'].map(e => <th key={e} className="px-3 py-2 text-center text-xs font-medium text-gray-500">{e.toUpperCase()}%</th>)}
                 </tr></thead>
                 <tbody className="divide-y">
-                  {(['sample1', 'sample2', 'sample3'] as const).map((s, idx) => (
-                    <tr key={s}>
-                      <td className="px-3 py-2 font-medium">{idx + 1}st/2nd/3rd Sample</td>
-                      {(['c', 'si', 'mn', 'p', 's'] as const).map(e => (
-                        <td key={e} className="px-3 py-2">
-                          <input type="number" step="0.001" className="input-field w-20 mx-auto text-center" 
-                            value={(form as any)[s][e]} 
-                            onChange={ev => setForm({...form, [s]: {...(form as any)[s], [e]: Number(ev.target.value)}})} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  <tr>
+                    <td className="px-3 py-2 font-medium">1st Sample</td>
+                    {(['c', 'si', 'mn', 'p', 's'] as const).map(e => (
+                      <td key={e} className="px-3 py-2">
+                        <input type="number" step="0.001" className="input-field w-20 mx-auto text-center" 
+                          value={form.sample1[e]} 
+                          onChange={ev => setForm({...form, sample1: {...form.sample1, [e]: Number(ev.target.value)}})} />
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-medium">2nd Sample</td>
+                    {(['c', 'si', 'mn', 'p', 's'] as const).map(e => (
+                      <td key={e} className="px-3 py-2">
+                        <input type="number" step="0.001" className="input-field w-20 mx-auto text-center" 
+                          value={form.sample2[e]} 
+                          onChange={ev => setForm({...form, sample2: {...form.sample2, [e]: Number(ev.target.value)}})} />
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-medium">3rd Sample</td>
+                    {(['c', 'si', 'mn', 'p', 's'] as const).map(e => (
+                      <td key={e} className="px-3 py-2">
+                        <input type="number" step="0.001" className="input-field w-20 mx-auto text-center" 
+                          value={form.sample3[e]} 
+                          onChange={ev => setForm({...form, sample3: {...form.sample3, [e]: Number(ev.target.value)}})} />
+                      </td>
+                    ))}
+                  </tr>
                 </tbody>
               </table>
             </div>

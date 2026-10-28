@@ -56,7 +56,7 @@ export default function AllEAFHeatsPage() {
     rows.push(['Tapping Start Time', eaf.tappingStartTime]);
     rows.push(['Tapping End Time', eaf.tappingEndTime]);
     rows.push(['Tapping Duration (min)', eaf.tappingDuration]);
-    rows.push(['En.Cou (MWh)', eaf.enCou]);
+    rows.push(['Carbon Percent (Sulco)', eaf.carbonPercent]);
     rows.push(['PPM', eaf.ppm]);
     rows.push(['']);
     
@@ -174,7 +174,7 @@ export default function AllEAFHeatsPage() {
     const rows: any[] = [];
     
     // Header
-    rows.push(['Heat ID', 'Date', 'Shift', 'Grade', 'Power On', 'Power Off', 'Tap to Tap', 'Tapping Weight', 'Tapping Duration', 'En.Cou', 'PPM', 'Walls', 'Center Piece', 'Bottom', 'Taphole', 'DRI', 'Briquet', 'FeMn', 'FeSiMn', 'FeSi', 'Lime', 'Carbon', 'CPC MHU', 'CPC Injection', 'Oxygen', 'CH4', 'Dolomite']);
+    rows.push(['Heat ID', 'Date', 'Shift', 'Grade', 'Power On', 'Power Off', 'Tap to Tap', 'Tapping Weight', 'Tapping Duration', 'Carbon %', 'PPM', 'Walls', 'Center Piece', 'Bottom', 'Taphole', 'DRI', 'Briquet', 'FeMn', 'FeSiMn', 'FeSi', 'Lime', 'Carbon', 'CPC MHU', 'CPC Injection', 'Oxygen', 'CH4', 'Dolomite']);
 
     filteredHeats.forEach(h => {
       const eaf = h.eafData;
@@ -189,7 +189,7 @@ export default function AllEAFHeatsPage() {
         eaf.tapToTap || '',
         eaf.tappingWeight || '',
         eaf.tappingDuration || '',
-        eaf.enCou || '',
+        eaf.carbonPercent || '',
         eaf.ppm || '',
         eaf.refractoryCounters?.walls || '',
         eaf.refractoryCounters?.centerPiece || '',
@@ -216,6 +216,137 @@ export default function AllEAFHeatsPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `all_eaf_heats_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
+  };
+
+  const exportAllToPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="fa">
+      <head>
+        <meta charset="UTF-8">
+        <title>گزارش کامل ذوب‌های EAF</title>
+        <style>
+          body { font-family: Tahoma, sans-serif; padding: 20px; direction: rtl; font-size: 11px; }
+          h1 { color: #1e40af; text-align: center; margin-bottom: 10px; }
+          h2 { color: #3b82f6; margin-top: 30px; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+          h3 { color: #059669; margin-top: 20px; }
+          .info { background: #f0f9ff; padding: 10px; border-radius: 5px; margin: 10px 0; }
+          .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+          .info-item { background: white; padding: 8px; border-radius: 3px; }
+          .info-label { font-size: 10px; color: #666; }
+          .info-value { font-size: 14px; font-weight: bold; color: #1e40af; }
+          table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+          th { background: #3b82f6; color: white; }
+          tr:nth-child(even) { background: #f9f9f9; }
+          .materials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+          .material-item { background: #f0fdf4; padding: 5px; border-radius: 3px; }
+          .page-break { page-break-after: always; }
+        </style>
+      </head>
+      <body>
+        <h1>گزارش کامل ذوب‌های کوره قوس الکتریکی (EAF)</h1>
+        <p style="text-align: center; color: #666;">تاریخ گزارش: ${new Date().toLocaleDateString('fa-IR')}</p>
+        <p style="text-align: center; color: #666;">تعداد ذوب‌ها: ${filteredHeats.length}</p>
+        
+        ${filteredHeats.map((h, idx) => {
+          const eaf = h.eafData;
+          if (!eaf) return '';
+          return `
+            <div class="${idx < filteredHeats.length - 1 ? 'page-break' : ''}">
+              <h2>ذوب ${h.heatId}</h2>
+              <div class="info">
+                <div class="info-grid">
+                  <div class="info-item"><div class="info-label">تاریخ</div><div class="info-value">${h.date}</div></div>
+                  <div class="info-item"><div class="info-label">شیفت</div><div class="info-value">${h.shift}</div></div>
+                  <div class="info-item"><div class="info-label">گرید</div><div class="info-value">${h.steelGrade}</div></div>
+                  <div class="info-item"><div class="info-label">وزن تخلیه</div><div class="info-value">${eaf.tappingWeight} تن</div></div>
+                </div>
+              </div>
+              
+              <h3>زمان‌های کاری</h3>
+              <table>
+                <tr><th>Power On</th><th>Power Off</th><th>Tap to Tap</th><th>مدت تخلیه</th><th>شروع تخلیه</th><th>پایان تخلیه</th><th>کربن %</th><th>PPM</th></tr>
+                <tr><td>${eaf.powerOn} دقیقه</td><td>${eaf.powerOff} دقیقه</td><td>${eaf.tapToTap} دقیقه</td><td>${eaf.tappingDuration} دقیقه</td><td>${eaf.tappingStartTime || '-'}</td><td>${eaf.tappingEndTime || '-'}</td><td>${eaf.carbonPercent || '-'}</td><td>${eaf.ppm || '-'}</td></tr>
+              </table>
+              
+              ${eaf.refractoryCounters ? `
+                <h3>وضعیت نسوز</h3>
+                <table>
+                  <tr><th>Walls</th><th>Center Piece - Delta</th><th>Bottom</th><th>Taphole</th></tr>
+                  <tr><td>${eaf.refractoryCounters.walls}</td><td>${eaf.refractoryCounters.centerPiece}</td><td>${eaf.refractoryCounters.bottom}</td><td>${eaf.refractoryCounters.taphole}</td></tr>
+                </table>
+              ` : ''}
+              
+              ${eaf.materials ? `
+                <h3>مواد مصرفی (شارژ)</h3>
+                <div class="materials">
+                  ${Object.entries(eaf.materials).map(([key, value]) => `
+                    <div class="material-item"><strong>${key}:</strong> ${(value as number).toLocaleString()}</div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              
+              ${eaf.tappingMaterials ? `
+                <h3>مواد مصرفی (تخلیه)</h3>
+                <div class="materials">
+                  ${Object.entries(eaf.tappingMaterials).map(([key, value]) => `
+                    <div class="material-item"><strong>${key}:</strong> ${(value as number).toLocaleString()}</div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              
+              ${eaf.preStoppages && eaf.preStoppages.filter((s: any) => s.from || s.till).length > 0 ? `
+                <h3>توقفات قبل از شروع</h3>
+                <table>
+                  <tr><th>از</th><th>تا</th><th>دقیقه</th><th>واحد</th><th>علت</th></tr>
+                  ${eaf.preStoppages.filter((s: any) => s.from || s.till).map((s: any) => `
+                    <tr><td>${s.from}</td><td>${s.till}</td><td>${s.minutes}</td><td>${s.workingGroup}</td><td>${s.reason || s.customReason || ''}</td></tr>
+                  `).join('')}
+                </table>
+              ` : ''}
+              
+              ${eaf.duringStoppages && eaf.duringStoppages.filter((s: any) => s.from || s.till).length > 0 ? `
+                <h3>توقفات حین کار</h3>
+                <table>
+                  <tr><th>از</th><th>تا</th><th>دقیقه</th><th>واحد</th><th>علت</th></tr>
+                  ${eaf.duringStoppages.filter((s: any) => s.from || s.till).map((s: any) => `
+                    <tr><td>${s.from}</td><td>${s.till}</td><td>${s.minutes}</td><td>${s.workingGroup}</td><td>${s.reason || ''}</td></tr>
+                  `).join('')}
+                </table>
+              ` : ''}
+              
+              ${eaf.chemicalAnalysis && eaf.chemicalAnalysis.length > 0 ? `
+                <h3>آنالیز شیمیایی</h3>
+                <table>
+                  <tr><th>نمونه</th><th>C%</th><th>Si%</th><th>Mn%</th><th>P%</th><th>S%</th></tr>
+                  ${eaf.chemicalAnalysis.map((sample: any, i: number) => `
+                    <tr><td>نمونه ${i + 1}</td><td>${sample.c}</td><td>${sample.si}</td><td>${sample.mn}</td><td>${sample.p}</td><td>${sample.s}</td></tr>
+                  `).join('')}
+                </table>
+              ` : ''}
+              
+              ${eaf.additives ? `
+                <h3>افزودنی‌ها</h3>
+                <div class="materials">
+                  ${Object.entries(eaf.additives).map(([key, value]) => `
+                    <div class="material-item"><strong>${key}:</strong> ${(value as number).toLocaleString()} Kg</div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
   };
 
   return (
@@ -250,8 +381,9 @@ export default function AllEAFHeatsPage() {
             </select>
           </div>
         </div>
-        <div className="mt-4">
+        <div className="mt-4 flex gap-2">
           <button onClick={exportAllToExcel} className="btn-primary">📥 دانلود اکسل همه ذوب‌ها</button>
+          <button onClick={exportAllToPDF} className="btn-secondary">📄 دانلود PDF همه ذوب‌ها</button>
         </div>
       </div>
 
@@ -274,7 +406,7 @@ export default function AllEAFHeatsPage() {
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Power On</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Power Off</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Tap to Tap</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">En.Cou</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">کربن %</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">PPM</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">عملیات</th>
               </tr>
@@ -290,12 +422,12 @@ export default function AllEAFHeatsPage() {
                   <td className="px-4 py-3 text-sm">{heat.eafData?.powerOn || '-'}</td>
                   <td className="px-4 py-3 text-sm">{heat.eafData?.powerOff || '-'}</td>
                   <td className="px-4 py-3 text-sm">{heat.eafData?.tapToTap || '-'}</td>
-                  <td className="px-4 py-3 text-sm">{heat.eafData?.enCou || '-'}</td>
+                  <td className="px-4 py-3 text-sm">{heat.eafData?.carbonPercent || '-'}</td>
                   <td className="px-4 py-3 text-sm">{heat.eafData?.ppm || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => setSelectedHeat(heat)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">مشاهده</button>
-                      <button onClick={() => exportSingleToExcel(heat)} className="text-green-600 hover:text-green-800 text-sm font-medium">📥 دانلود</button>
+                      <button onClick={() => exportSingleToExcel(heat)} className="text-green-600 hover:text-green-800 text-sm font-medium">📥</button>
                     </div>
                   </td>
                 </tr>
@@ -340,7 +472,7 @@ export default function AllEAFHeatsPage() {
                   <div><p className="text-xs text-gray-600">مدت تخلیه</p><p className="font-medium">{selectedHeat.eafData.tappingDuration || '-'} دقیقه</p></div>
                   <div><p className="text-xs text-gray-600">شروع تخلیه</p><p className="font-medium">{selectedHeat.eafData.tappingStartTime || '-'}</p></div>
                   <div><p className="text-xs text-gray-600">پایان تخلیه</p><p className="font-medium">{selectedHeat.eafData.tappingEndTime || '-'}</p></div>
-                  <div><p className="text-xs text-gray-600">En.Cou</p><p className="font-medium">{selectedHeat.eafData.enCou || '-'} MWh</p></div>
+                  <div><p className="text-xs text-gray-600">کربن %</p><p className="font-medium">{selectedHeat.eafData.carbonPercent || '-'}</p></div>
                   <div><p className="text-xs text-gray-600">PPM</p><p className="font-medium">{selectedHeat.eafData.ppm || '-'}</p></div>
                 </div>
 
@@ -416,21 +548,6 @@ export default function AllEAFHeatsPage() {
                   </div>
                 )}
 
-                {/* Ladle Info */}
-                {selectedHeat.eafData.ladleInfo && (
-                  <div>
-                    <h5 className="font-bold text-gray-700 mb-2">اطلاعات پاتیل</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                      {Object.entries(selectedHeat.eafData.ladleInfo).map(([key, value]) => (
-                        <div key={key} className="bg-gray-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">{key}</p>
-                          <p className="font-medium">{value as string || '-'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Chemical Analysis */}
                 {selectedHeat.eafData.chemicalAnalysis && selectedHeat.eafData.chemicalAnalysis.length > 0 && (
                   <div>
@@ -450,7 +567,7 @@ export default function AllEAFHeatsPage() {
                         <tbody className="divide-y">
                           {selectedHeat.eafData.chemicalAnalysis.map((sample: any, i: number) => (
                             <tr key={i}>
-                              <td className="px-3 py-2 font-medium">نمونه {i + 1}</td>
+                              <td className="px-3 py-2 font-medium">{i + 1}st/2nd/3rd Sample</td>
                               <td className="px-3 py-2 text-center">{sample.c}</td>
                               <td className="px-3 py-2 text-center">{sample.si}</td>
                               <td className="px-3 py-2 text-center">{sample.mn}</td>
@@ -460,78 +577,6 @@ export default function AllEAFHeatsPage() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* Additives */}
-                {selectedHeat.eafData.additives && (
-                  <div>
-                    <h5 className="font-bold text-gray-700 mb-2">افزودنی‌ها</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {Object.entries(selectedHeat.eafData.additives).map(([key, value]) => (
-                        <div key={key} className="bg-purple-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">{key}</p>
-                          <p className="font-medium">{(value as number).toLocaleString()} Kg</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Consumables */}
-                {selectedHeat.eafData.consumables && (
-                  <div>
-                    <h5 className="font-bold text-gray-700 mb-2">مصرفی‌ها</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {Object.entries(selectedHeat.eafData.consumables).map(([key, value]) => (
-                        <div key={key} className="bg-gray-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">{key}</p>
-                          <p className="font-medium">{value as number}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Electrode Status */}
-                {selectedHeat.eafData.electrodeStatus && (
-                  <div>
-                    <h5 className="font-bold text-gray-700 mb-2">وضعیت الکترودها</h5>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['phase1', 'phase2', 'phase3'].map((phase, idx) => (
-                        <div key={phase} className="bg-yellow-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">فاز {idx + 1}</p>
-                          <p className="font-medium">{(selectedHeat.eafData.electrodeStatus as any)[phase]?.join(', ') || '-'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recording Info */}
-                {(selectedHeat.eafData.recordingOperator || selectedHeat.eafData.shiftSupervisor || selectedHeat.eafData.supervisorNotes) && (
-                  <div>
-                    <h5 className="font-bold text-gray-700 mb-2">اطلاعات ثبت</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      {selectedHeat.eafData.recordingOperator && (
-                        <div className="bg-gray-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">اپراتور ثبت</p>
-                          <p className="font-medium">{selectedHeat.eafData.recordingOperator}</p>
-                        </div>
-                      )}
-                      {selectedHeat.eafData.shiftSupervisor && (
-                        <div className="bg-gray-50 p-2 rounded text-sm">
-                          <p className="text-xs text-gray-500">سرپرست شیفت</p>
-                          <p className="font-medium">{selectedHeat.eafData.shiftSupervisor}</p>
-                        </div>
-                      )}
-                      {selectedHeat.eafData.supervisorNotes && (
-                        <div className="bg-gray-50 p-2 rounded text-sm md:col-span-3">
-                          <p className="text-xs text-gray-500">یادداشت سرپرست</p>
-                          <p className="font-medium">{selectedHeat.eafData.supervisorNotes}</p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}

@@ -41,7 +41,8 @@ export interface EAFData {
   tappingStartTime: string;
   tappingEndTime: string;
   tappingDuration: number;
-  enCou: number;
+  enCou?: number;
+  carbonPercent?: number;
   ppm: number;
   // Materials
   materials: {
