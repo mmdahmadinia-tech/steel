@@ -48,16 +48,26 @@ export default function EAFPage() {
   ];
 
   const handleSave = () => {
+    // Calculate tapping duration = end time - start time
+    let tappingDuration = 0;
+    if (formData.tappingStartTime && formData.tappingEndTime) {
+      const [startH, startM] = formData.tappingStartTime.split(':').map(Number);
+      const [endH, endM] = formData.tappingEndTime.split(':').map(Number);
+      const startMin = startH * 60 + startM;
+      let endMin = endH * 60 + endM;
+      if (endMin < startMin) endMin += 24 * 60;
+      tappingDuration = endMin - startMin;
+    }
+
     // Calculate POWER OFF = sum of stoppages + tapping time
     const preStoppagesTotal = (formData.preStoppages || []).reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
-    const duringStoppagesTotal = (formData.stoppages || []).reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
-    const tappingTime = formData.tappingDuration || 0;
-    const powerOff = preStoppagesTotal + duringStoppagesTotal + tappingTime;
+    const duringStoppagesTotal = (formData.duringStoppages || []).reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
+    const powerOff = preStoppagesTotal + duringStoppagesTotal + tappingDuration;
     
     // Calculate TAP TO TAP = POWER OFF + POWER ON
     const tapToTap = powerOff + (formData.powerOn || 0);
 
-    const updatedData = { ...formData, powerOff, tapToTap };
+    const updatedData = { ...formData, tappingDuration, powerOff, tapToTap };
 
     if (!selectedHeatId) {
       const newHeatId = getNextHeatId();
@@ -127,8 +137,11 @@ export default function EAFPage() {
               <div><label className="label-field">POWER OFF (دقیقه)</label><input type="number" className="input-field" value={formData.powerOff || 0} readOnly /></div>
               <div><label className="label-field">TAP TO TAP (دقیقه)</label><input type="number" className="input-field" value={formData.tapToTap || 0} readOnly /></div>
               <div><label className="label-field">وزن تخلیه (تن)</label><input type="number" className="input-field" value={formData.tappingWeight || ''} onChange={e => setFormData({...formData, tappingWeight: Number(e.target.value)})} /></div>
-              <div><label className="label-field">مدت تخلیه (دقیقه)</label><input type="number" className="input-field" value={formData.tappingDuration || 0} onChange={e => setFormData({...formData, tappingDuration: Number(e.target.value)})} /></div>
+              <div><label className="label-field">شروع تخلیه</label><input type="time" className="input-field" value={formData.tappingStartTime || ''} onChange={e => setFormData({...formData, tappingStartTime: e.target.value})} /></div>
+              <div><label className="label-field">پایان تخلیه</label><input type="time" className="input-field" value={formData.tappingEndTime || ''} onChange={e => setFormData({...formData, tappingEndTime: e.target.value})} /></div>
+              <div><label className="label-field">مدت تخلیه (دقیقه)</label><input type="number" className="input-field" value={formData.tappingDuration || 0} readOnly /></div>
               <div><label className="label-field">En.Cou (MWh)</label><input type="number" className="input-field" step="0.1" value={formData.enCou || ''} onChange={e => setFormData({...formData, enCou: Number(e.target.value)})} /></div>
+              <div><label className="label-field">PPM</label><input type="number" className="input-field" value={formData.ppm || ''} onChange={e => setFormData({...formData, ppm: Number(e.target.value)})} /></div>
             </div>
           )}
 
@@ -140,9 +153,9 @@ export default function EAFPage() {
                 { key: 'bottom', label: 'Bottom — کف' },
                 { key: 'taphole', label: 'Taphole — مجرای تخلیه' },
               ].map(item => {
-                const currentValue = (refractoryCounters as any)[item.key] || 0;
+                const currentValue = refractoryCounters[item.key as keyof typeof refractoryCounters] || 0;
                 const previousHeat = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id))[1];
-                const previousValue = previousHeat?.eafData?.refractoryCounters?.[item.key] || 0;
+                const previousValue = previousHeat?.eafData?.refractoryCounters?.[item.key as keyof typeof previousHeat.eafData.refractoryCounters] || 0;
                 const autoIncrementedValue = currentValue === 0 ? previousValue + 1 : currentValue;
                 
                 return (
