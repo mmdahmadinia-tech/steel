@@ -31,7 +31,6 @@ export const STEEL_GRADES = ['4402', '3203', '3401', '3204', '3302', '4501'];
 export const SHIFTS = ['A', 'B', 'C', 'D'];
 
 export const WORKING_GROUPS = [
-  'Setup Time',
   'کوره-تولید',
   'کوره-برق',
   'کوره-مکانیک',
@@ -46,6 +45,17 @@ export const WORKING_GROUPS = [
   'فیوم',
   'پست برق',
   'سایر',
+];
+
+export const PRE_START_STOP_REASONS = [
+  'SETUP TIME',
+  'تعویض الکترود فاز 1',
+  'تعویض الکترود فاز 2',
+  'تعویض الکترود فاز 3',
+  'تنظیم فاز 1',
+  'تنظیم فاز 2',
+  'تنظیم فاز 3',
+  'تنظیم هرسه فاز',
 ];
 
 export const LADLE_NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];

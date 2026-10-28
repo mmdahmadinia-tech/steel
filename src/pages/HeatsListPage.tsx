@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { STEEL_GRADES, SHIFTS } from '../data/mockData';
@@ -11,6 +10,7 @@ export default function HeatsListPage() {
   const [filterShift, setFilterShift] = useState('');
   const [filterGrade, setFilterGrade] = useState('');
   const [filterDate, setFilterDate] = useState('');
+  const [selectedHeat, setSelectedHeat] = useState<any>(null);
 
   let filteredHeats = heats.filter(h => {
     if (user?.role === 'eaf_user') return h.eafStatus !== 'not_started';
@@ -28,13 +28,7 @@ export default function HeatsListPage() {
   });
 
   const exportToExcel = () => {
-    const headers = [
-      'Heat ID', 'Date', 'Shift', 'Grade',
-      'Tapping Weight (Ton)', 'Power On (min)', 'Power Off (min)', 'TAP TO TAP (min)', 'En.Cou (MWh)',
-      'FeMn (Kg)', 'FeSiMn (Kg)', 'FeSi (Kg)', 'Lime (Kg)', 'Carbon (Kg)', 'CPC Injection (Kg)', 'Oxygen (Nm³)',
-      'EAF Status', 'LF Status', 'CCM Status'
-    ];
-    
+    const headers = ['Heat ID', 'Date', 'Shift', 'Grade', 'Tapping Weight', 'Power On', 'Power Off', 'Tap to Tap', 'EAF Status', 'LF Status', 'CCM Status'];
     const rows = filteredHeats.map(h => [
       h.heatId,
       h.date,
@@ -44,19 +38,10 @@ export default function HeatsListPage() {
       h.eafData?.powerOn || '',
       h.eafData?.powerOff || '',
       h.eafData?.tapToTap || '',
-      h.eafData?.enCou || '',
-      h.eafData?.materials?.feMn || '',
-      h.eafData?.materials?.feSiMn || '',
-      h.eafData?.materials?.feSi || '',
-      h.eafData?.materials?.lime || '',
-      h.eafData?.materials?.carbon || '',
-      h.eafData?.materials?.cpcInjection || '',
-      h.eafData?.materials?.oxygen || '',
       h.eafStatus,
       h.lfStatus,
       h.ccmStatus
     ]);
-
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -68,15 +53,32 @@ export default function HeatsListPage() {
   return (
     <div className="space-y-6">
       <div className="card">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">🔍 فیلترها</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div><label className="label-field">جست‌وجوی Heat ID</label><input type="text" className="input-field" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="شماره ذوب..." /></div>
-          <div><label className="label-field">تاریخ</label><input type="text" className="input-field" value={filterDate} onChange={e => setFilterDate(e.target.value)} placeholder="1403/09" /></div>
-          <div><label className="label-field">شیفت</label><select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}><option value="">همه</option>{SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}</select></div>
-          <div><label className="label-field">گرید</label><select className="input-field" value={filterGrade} onChange={e => setFilterGrade(e.target.value)}><option value="">همه</option>{STEEL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}</select></div>
+          <div>
+            <label className="label-field">تاریخ</label>
+            <input type="text" className="input-field" value={filterDate} onChange={e => setFilterDate(e.target.value)} placeholder="1403/09" />
+          </div>
+          <div>
+            <label className="label-field">Heat ID</label>
+            <input type="text" className="input-field" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="شماره ذوب..." />
+          </div>
+          <div>
+            <label className="label-field">شیفت</label>
+            <select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}>
+              <option value="">همه</option>
+              {SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">گرید</label>
+            <select className="input-field" value={filterGrade} onChange={e => setFilterGrade(e.target.value)}>
+              <option value="">همه</option>
+              {STEEL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
         </div>
         <div className="mt-4">
-          <button onClick={exportToExcel} className="btn-primary">📥 دانلود اکسل (CSV)</button>
+          <button onClick={exportToExcel} className="btn-primary">📥 دانلود اکسل</button>
         </div>
       </div>
 
@@ -87,17 +89,18 @@ export default function HeatsListPage() {
       <div className="card overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b"><tr>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Heat ID</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">تاریخ</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">شیفت</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">گرید</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">وزن (تن)</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">EAF</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">LF</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">CCM</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">عملیات</th>
-            </tr></thead>
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Heat ID</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">تاریخ</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">شیفت</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">گرید</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">EAF</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">LF</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">CCM</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">عملیات</th>
+              </tr>
+            </thead>
             <tbody className="divide-y">
               {filteredHeats.map(heat => (
                 <tr key={heat.id} className="hover:bg-blue-50/50">
@@ -105,11 +108,14 @@ export default function HeatsListPage() {
                   <td className="px-4 py-3 text-sm">{heat.date}</td>
                   <td className="px-4 py-3"><span className="px-2 py-1 rounded-full text-xs bg-slate-100">{heat.shift}</span></td>
                   <td className="px-4 py-3 text-sm">{heat.steelGrade}</td>
-                  <td className="px-4 py-3 text-sm">{heat.eafData?.tappingWeight || '-'}</td>
                   <td className="px-4 py-3"><StatusBadge status={heat.eafStatus} /></td>
                   <td className="px-4 py-3"><StatusBadge status={heat.lfStatus} /></td>
                   <td className="px-4 py-3"><StatusBadge status={heat.ccmStatus} /></td>
-                  <td className="px-4 py-3"><Link to={`/heats/${heat.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">مشاهده جزئیات ←</Link></td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => setSelectedHeat(heat)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      مشاهده ←
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -118,6 +124,86 @@ export default function HeatsListPage() {
       </div>
 
       {filteredHeats.length === 0 && <div className="card text-center py-12"><p className="text-gray-500">اطلاعاتی یافت نشد</p></div>}
+
+      {/* Heat Detail Modal */}
+      {selectedHeat && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">ذوب {selectedHeat.heatId}</h3>
+              <button onClick={() => setSelectedHeat(null)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div><p className="text-sm text-gray-500">تاریخ</p><p className="font-bold">{selectedHeat.date}</p></div>
+              <div><p className="text-sm text-gray-500">شیفت</p><p className="font-bold">{selectedHeat.shift}</p></div>
+              <div><p className="text-sm text-gray-500">گرید</p><p className="font-bold">{selectedHeat.steelGrade}</p></div>
+              <div><p className="text-sm text-gray-500">وزن تخلیه</p><p className="font-bold">{selectedHeat.eafData?.tappingWeight || '-'} تن</p></div>
+            </div>
+
+            {selectedHeat.eafData && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-blue-600 mb-3">⚡ اطلاعات EAF</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-blue-50 p-4 rounded-lg">
+                  <div><p className="text-xs text-gray-600">Power On</p><p className="font-medium">{selectedHeat.eafData.powerOn || '-'}</p></div>
+                  <div><p className="text-xs text-gray-600">Power Off</p><p className="font-medium">{selectedHeat.eafData.powerOff || '-'}</p></div>
+                  <div><p className="text-xs text-gray-600">Tap to Tap</p><p className="font-medium">{selectedHeat.eafData.tapToTap || '-'} دقیقه</p></div>
+                  <div><p className="text-xs text-gray-600">En.Cou</p><p className="font-medium">{selectedHeat.eafData.enCou || '-'} MWh</p></div>
+                </div>
+                {selectedHeat.eafData.materials && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-gray-700 mb-2">مواد مصرفی:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                      {Object.entries(selectedHeat.eafData.materials).map(([key, value]) => (
+                        <div key={key} className="bg-white p-2 rounded border">
+                          <p className="text-xs text-gray-500">{key}</p>
+                          <p className="font-medium">{(value as number).toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedHeat.lfData && (
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-green-600 mb-3">🔧 اطلاعات LF</h4>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  {selectedHeat.lfData.additives && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-2">مواد افزودنی:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        {Object.entries(selectedHeat.lfData.additives).map(([key, value]) => (
+                          <div key={key} className="bg-white p-2 rounded border">
+                            <p className="text-xs text-gray-500">{key}</p>
+                            <p className="font-medium">{(value as number).toLocaleString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {selectedHeat.ccmData && (
+              <div>
+                <h4 className="text-lg font-bold text-purple-600 mb-3">🏭 اطلاعات CCM</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-purple-50 p-4 rounded-lg">
+                  <div><p className="text-xs text-gray-600">سرعت ریخته‌گری</p><p className="font-medium">{selectedHeat.ccmData.avgCastingSpeed || '-'} m/min</p></div>
+                  <div><p className="text-xs text-gray-600">پارگی خطوط</p><p className="font-medium">{selectedHeat.ccmData.lineBreaks || 0}</p></div>
+                  <div><p className="text-xs text-gray-600">ذوب در سکوئنس</p><p className="font-medium">{selectedHeat.ccmData.sequenceHeats || '-'}</p></div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setSelectedHeat(null)} className="btn-secondary">بستن</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
