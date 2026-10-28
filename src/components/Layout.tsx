@@ -7,6 +7,7 @@ const menuItems = [
   { path: '/dashboard', label: 'داشبورد', icon: '📊', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
   { path: '/heats', label: 'فهرست ذوب‌ها', icon: '🔥', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
   { path: '/heat-details', label: 'جزئیات ذوب', icon: '📋', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
+  { path: '/all-eaf-heats', label: 'کلیه ذوب‌های EAF', icon: '📊', roles: ['admin', 'eaf_user', 'analyst'] },
   { path: '/eaf', label: 'کوره قوس الکتریکی (EAF)', icon: '⚡', roles: ['admin', 'eaf_user', 'analyst'] },
   { path: '/lf', label: 'کوره پاتیلی (LF)', icon: '🔧', roles: ['admin', 'lf_user', 'analyst'] },
   { path: '/ccm', label: 'ریخته‌گری مداوم (CCM)', icon: '🏭', roles: ['admin', 'ccm_user', 'analyst'] },
