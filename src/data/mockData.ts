@@ -74,6 +74,10 @@ export interface EAFData {
   scrapBuckets: any[];
   // Additives
   additives: any;
+  // Recording info
+  recordingOperator?: string;
+  shiftSupervisor?: string;
+  supervisorNotes?: string;
 }
 
 export const STEEL_GRADES = ['4402', '3203', '3401', '3204', '3302', '4501'];
