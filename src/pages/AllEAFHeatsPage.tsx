@@ -49,6 +49,7 @@ export default function AllEAFHeatsPage() {
     rows.push(['Steel Grade', h.steelGrade]);
     rows.push(['']);
     rows.push(['=== EAF Data ===']);
+    rows.push(['Heat Start Time', eaf.heatStartTime || '']);
     rows.push(['Power On (min)', eaf.powerOn]);
     rows.push(['Power Off (min)', eaf.powerOff]);
     rows.push(['Tap to Tap (min)', eaf.tapToTap]);

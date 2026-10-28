@@ -44,6 +44,7 @@ export interface EAFData {
   enCou?: number;
   carbonPercent?: number;
   ppm: number;
+  heatStartTime?: string;
   // Materials
   materials: {
     dri: number; briquet: number;

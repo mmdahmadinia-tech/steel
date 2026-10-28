@@ -3,6 +3,7 @@ import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { STEEL_GRADES, SHIFTS, WORKING_GROUPS, PRE_START_STOP_REASONS } from '../data/mockData';
 import { getToday, toFa, padFa } from '../components/JalaliDatePicker';
+import TimeInput24h from '../components/TimeInput24h';
 
 // Helper: calculate minutes between two HH:MM times
 function calcMinutes(from: string, till: string): number {
@@ -35,11 +36,12 @@ export default function EAFPage() {
     date: getTodayJalali(),
     shift: 'A',
     steelGrade: '4402',
+    heatStartTime: '', // شروع ذوب
     powerOn: 0,
     tappingStartTime: '',
     tappingEndTime: '',
     tappingWeight: 0,
-    carbonPercent: 0, // درصد کربن (سلوکس)
+    carbonPercent: 0,
     ppm: 0,
     // Refractory
     walls: 0, centerPiece: 0, bottom: 0, taphole: 0,
@@ -82,11 +84,12 @@ export default function EAFPage() {
     if (selectedHeatId) {
       const heat = heats.find(h => h.heatId === selectedHeatId);
       if (heat && heat.eafData) {
-        const d = heat.eafData;
+        const d = heat.eafData as any;
         setForm({
           date: d.date || getTodayJalali(),
           shift: d.shift || 'A',
           steelGrade: d.steelGrade || '4402',
+          heatStartTime: d.heatStartTime || '',
           powerOn: d.powerOn || 0,
           tappingStartTime: d.tappingStartTime || '',
           tappingEndTime: d.tappingEndTime || '',
@@ -157,12 +160,16 @@ export default function EAFPage() {
       // New heat - auto-increment refractory from previous heat
       const previousHeats = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id));
       const prev = previousHeats[0];
-      const prevRefractory = prev?.eafData?.refractoryCounters || { walls: 0, centerPiece: 0, bottom: 0, taphole: 0 };
+      const prevRefractory = (prev?.eafData as any)?.refractoryCounters || { walls: 0, centerPiece: 0, bottom: 0, taphole: 0 };
+      
+      console.log('Previous refractory:', prevRefractory);
+      console.log('Previous heat:', prev?.heatId);
       
       setForm({
         date: getTodayJalali(),
         shift: 'A',
         steelGrade: '4402',
+        heatStartTime: '',
         powerOn: 0,
         tappingStartTime: '',
         tappingEndTime: '',
@@ -197,27 +204,19 @@ export default function EAFPage() {
         recordingOperator: '', shiftSupervisor: '', supervisorNotes: '',
       });
     }
-  }, [selectedHeatId]);
+  }, [selectedHeatId, heats]);
 
   // Auto-calculate derived values
   const calculated = useMemo(() => {
-    // Tapping duration
     const tappingDuration = calcMinutes(form.tappingStartTime, form.tappingEndTime);
-    
-    // Sum of stoppages
     const preStoppagesTotal = form.preStoppages.reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
     const duringStoppagesTotal = form.duringStoppages.reduce((sum: number, s: any) => sum + (s.minutes || 0), 0);
-    
-    // POWER OFF = stoppages + tapping duration
     const powerOff = preStoppagesTotal + duringStoppagesTotal + tappingDuration;
-    
-    // TAP TO TAP = POWER OFF + POWER ON
     const tapToTap = powerOff + (form.powerOn || 0);
     
     return { tappingDuration, powerOff, tapToTap };
   }, [form.tappingStartTime, form.tappingEndTime, form.preStoppages, form.duringStoppages, form.powerOn]);
 
-  // Update stoppage minutes when time changes
   const updateStoppage = (field: 'preStoppages' | 'duringStoppages', index: number, key: string, value: any) => {
     const newStoppages = [...form[field]];
     newStoppages[index] = { ...newStoppages[index], [key]: value };
@@ -232,6 +231,7 @@ export default function EAFPage() {
       date: form.date,
       shift: form.shift,
       steelGrade: form.steelGrade,
+      heatStartTime: form.heatStartTime,
       refractoryCounters: { walls: form.walls, centerPiece: form.centerPiece, bottom: form.bottom, taphole: form.taphole },
       powerOn: form.powerOn,
       powerOff: calculated.powerOff,
@@ -400,18 +400,25 @@ export default function EAFPage() {
                   {STEEL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
+              <TimeInput24h
+                label="شروع ذوب"
+                value={form.heatStartTime}
+                onChange={(val) => setForm({...form, heatStartTime: val})}
+              />
               <div>
                 <label className="label-field">POWER ON (دقیقه)</label>
                 <input type="number" className="input-field" value={form.powerOn} onChange={e => setForm({...form, powerOn: Number(e.target.value)})} />
               </div>
-              <div>
-                <label className="label-field">شروع تخلیه (24h)</label>
-                <input type="time" className="input-field" value={form.tappingStartTime} onChange={e => setForm({...form, tappingStartTime: e.target.value})} />
-              </div>
-              <div>
-                <label className="label-field">پایان تخلیه (24h)</label>
-                <input type="time" className="input-field" value={form.tappingEndTime} onChange={e => setForm({...form, tappingEndTime: e.target.value})} />
-              </div>
+              <TimeInput24h
+                label="شروع تخلیه"
+                value={form.tappingStartTime}
+                onChange={(val) => setForm({...form, tappingStartTime: val})}
+              />
+              <TimeInput24h
+                label="پایان تخلیه"
+                value={form.tappingEndTime}
+                onChange={(val) => setForm({...form, tappingEndTime: val})}
+              />
               <div>
                 <label className="label-field">وزن تخلیه (تن)</label>
                 <input type="number" className="input-field" value={form.tappingWeight} onChange={e => setForm({...form, tappingWeight: Number(e.target.value)})} step="0.1" />
@@ -444,6 +451,8 @@ export default function EAFPage() {
             <div>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-800">
                 ⚠️ اعداد به‌صورت خودکار از ذوب قبلی +1 شده‌اند. در صورت تعویض، دکمه صفر کردن را بزنید.
+                <br />
+                <strong>مقدار قبلی:</strong> Walls: {form.walls - 1}, Center Piece: {form.centerPiece - 1}, Bottom: {form.bottom - 1}, Taphole: {form.taphole - 1}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
@@ -480,8 +489,12 @@ export default function EAFPage() {
                     {form.preStoppages.map((s: any, i: number) => (
                       <tr key={i} className="hover:bg-gray-50">
                         <td className="px-2 py-2 text-gray-500">{i + 1}</td>
-                        <td className="px-2 py-2"><input type="time" className="input-field w-28" value={s.from} onChange={e => updateStoppage('preStoppages', i, 'from', e.target.value)} /></td>
-                        <td className="px-2 py-2"><input type="time" className="input-field w-28" value={s.till} onChange={e => updateStoppage('preStoppages', i, 'till', e.target.value)} /></td>
+                        <td className="px-2 py-2">
+                          <TimeInput24h value={s.from} onChange={(val) => updateStoppage('preStoppages', i, 'from', val)} />
+                        </td>
+                        <td className="px-2 py-2">
+                          <TimeInput24h value={s.till} onChange={(val) => updateStoppage('preStoppages', i, 'till', val)} />
+                        </td>
                         <td className="px-2 py-2"><input type="number" className="input-field w-20 bg-gray-100" value={s.minutes} readOnly /></td>
                         <td className="px-2 py-2">
                           <select className="input-field w-40" value={s.workingGroup} onChange={e => updateStoppage('preStoppages', i, 'workingGroup', e.target.value)}>
@@ -513,7 +526,7 @@ export default function EAFPage() {
               <div>
                 <h4 className="font-bold text-gray-700 mb-4">SAMPLE TIME</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  <div><label className="label-field">Time (24h)</label><input type="time" className="input-field" /></div>
+                  <TimeInput24h label="Time" value="" onChange={() => {}} />
                   <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
                   <div><label className="label-field">DRI (Ton)</label><input type="number" step="0.1" className="input-field" value={form.dri} onChange={e => setForm({...form, dri: Number(e.target.value)})} /></div>
                   <div><label className="label-field">Briquet (Ton)</label><input type="number" step="0.1" className="input-field" value={form.briquet} onChange={e => setForm({...form, briquet: Number(e.target.value)})} /></div>
@@ -529,7 +542,7 @@ export default function EAFPage() {
               <div className="border-t pt-6">
                 <h4 className="font-bold text-gray-700 mb-4">Tapping Start</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  <div><label className="label-field">Time (24h)</label><input type="time" className="input-field" value={form.tappingStartTime} onChange={e => setForm({...form, tappingStartTime: e.target.value})} /></div>
+                  <TimeInput24h label="Time" value={form.tappingStartTime} onChange={(val) => setForm({...form, tappingStartTime: val})} />
                   <div><label className="label-field">Tap</label><input type="number" className="input-field" /></div>
                   <div><label className="label-field">DRI (Ton)</label><input type="number" step="0.1" className="input-field" value={form.t_dri} onChange={e => setForm({...form, t_dri: Number(e.target.value)})} /></div>
                   <div><label className="label-field">Briquet (Ton)</label><input type="number" step="0.1" className="input-field" value={form.t_briquet} onChange={e => setForm({...form, t_briquet: Number(e.target.value)})} /></div>
@@ -563,8 +576,12 @@ export default function EAFPage() {
                     {form.duringStoppages.map((s: any, i: number) => (
                       <tr key={i} className="hover:bg-gray-50">
                         <td className="px-2 py-2 text-gray-500">{i + 1}</td>
-                        <td className="px-2 py-2"><input type="time" className="input-field w-28" value={s.from} onChange={e => updateStoppage('duringStoppages', i, 'from', e.target.value)} /></td>
-                        <td className="px-2 py-2"><input type="time" className="input-field w-28" value={s.till} onChange={e => updateStoppage('duringStoppages', i, 'till', e.target.value)} /></td>
+                        <td className="px-2 py-2">
+                          <TimeInput24h value={s.from} onChange={(val) => updateStoppage('duringStoppages', i, 'from', val)} />
+                        </td>
+                        <td className="px-2 py-2">
+                          <TimeInput24h value={s.till} onChange={(val) => updateStoppage('duringStoppages', i, 'till', val)} />
+                        </td>
                         <td className="px-2 py-2"><input type="number" className="input-field w-20 bg-gray-100" value={s.minutes} readOnly /></td>
                         <td className="px-2 py-2">
                           <select className="input-field w-40" value={s.workingGroup} onChange={e => updateStoppage('duringStoppages', i, 'workingGroup', e.target.value)}>
@@ -593,8 +610,8 @@ export default function EAFPage() {
                   {['1','2','3','4','5','6','7','8','9'].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
-              <div><label className="label-field">Request Time (24h)</label><input type="time" className="input-field" value={form.requestTime} onChange={e => setForm({...form, requestTime: e.target.value})} /></div>
-              <div><label className="label-field">Delivery Time (24h)</label><input type="time" className="input-field" value={form.deliveryTime} onChange={e => setForm({...form, deliveryTime: e.target.value})} /></div>
+              <TimeInput24h label="Request Time" value={form.requestTime} onChange={(val) => setForm({...form, requestTime: val})} />
+              <TimeInput24h label="Delivery Time" value={form.deliveryTime} onChange={(val) => setForm({...form, deliveryTime: val})} />
               <div><label className="label-field">Slag Condition</label><input type="number" className="input-field" value={form.slagCondition} onChange={e => setForm({...form, slagCondition: e.target.value})} placeholder="عدد" /></div>
               <div><label className="label-field">Wall Condition</label><input type="number" className="input-field" value={form.wallCondition} onChange={e => setForm({...form, wallCondition: e.target.value})} placeholder="عدد" /></div>
             </div>
