@@ -139,13 +139,37 @@ export default function EAFPage() {
                 { key: 'centerPiece', label: 'CENTER PIECE - دلتا' },
                 { key: 'bottom', label: 'Bottom — کف' },
                 { key: 'taphole', label: 'Taphole — مجرای تخلیه' },
-              ].map(item => (
-                <div key={item.key} className="border border-gray-200 rounded-lg p-4">
-                  <label className="label-field">{item.label}</label>
-                  <input type="number" className="input-field mb-2" value={(refractoryCounters as any)[item.key] || 0} onChange={e => setRefractoryCounters({...refractoryCounters, [item.key]: Number(e.target.value)})} />
-                  <button onClick={() => setRefractoryCounters({...refractoryCounters, [item.key]: 0})} className="text-xs text-red-600 hover:text-red-800">🔄 صفر کردن</button>
-                </div>
-              ))}
+              ].map(item => {
+                const currentValue = (refractoryCounters as any)[item.key] || 0;
+                const previousHeat = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id))[1];
+                const previousValue = previousHeat?.eafData?.refractoryCounters?.[item.key] || 0;
+                const autoIncrementedValue = currentValue === 0 ? previousValue + 1 : currentValue;
+                
+                return (
+                  <div key={item.key} className="border border-gray-200 rounded-lg p-4">
+                    <label className="label-field">{item.label}</label>
+                    <input 
+                      type="number" 
+                      className="input-field mb-2" 
+                      value={autoIncrementedValue}
+                      onChange={e => {
+                        const newValue = Number(e.target.value);
+                        setRefractoryCounters({...refractoryCounters, [item.key]: newValue});
+                        setFormData({...formData, refractoryCounters: {...refractoryCounters, [item.key]: newValue}});
+                      }} 
+                    />
+                    <button 
+                      onClick={() => {
+                        setRefractoryCounters({...refractoryCounters, [item.key]: 0});
+                        setFormData({...formData, refractoryCounters: {...refractoryCounters, [item.key]: 0}});
+                      }} 
+                      className="text-xs text-red-600 hover:text-red-800"
+                    >
+                      🔄 صفر کردن
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -266,7 +290,7 @@ export default function EAFPage() {
 }
 
 function StoppagesTable({ title, formData, setFormData, field, isPreStart }: any) {
-  const [stoppages, setStoppages] = useState<any[]>(Array(7).fill({ from: '', till: '', minutes: 0, workingGroup: '', description: '', reason: '' }));
+  const [stoppages, setStoppages] = useState<any[]>(Array(7).fill({ from: '', till: '', minutes: 0, workingGroup: '', reason: '', customReason: '' }));
 
   const calculateMinutes = (from: string, till: string): number => {
     if (!from || !till) return 0;
@@ -294,17 +318,20 @@ function StoppagesTable({ title, formData, setFormData, field, isPreStart }: any
         <table className="w-full text-sm">
           <thead className="bg-gray-50"><tr>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">ردیف</th>
-            {isPreStart && <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">علت توقف</th>}
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">From (HH:MM)</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Till (HH:MM)</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Minute</th>
             <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Working Group</th>
-            <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Description</th>
+            {isPreStart && <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">علت توقف</th>}
           </tr></thead>
           <tbody className="divide-y">
             {stoppages.map((s, i) => (
               <tr key={i} className="hover:bg-gray-50">
                 <td className="px-3 py-2 text-gray-500">{i + 1}</td>
+                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.from} onChange={e => updateStoppage(i, 'from', e.target.value)} /></td>
+                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.till} onChange={e => updateStoppage(i, 'till', e.target.value)} /></td>
+                <td className="px-3 py-2"><input type="number" className="input-field w-20" value={s.minutes} readOnly /></td>
+                <td className="px-3 py-2"><select className="input-field w-40" value={s.workingGroup} onChange={e => updateStoppage(i, 'workingGroup', e.target.value)}><option value="">انتخاب</option>{WORKING_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
                 {isPreStart && (
                   <td className="px-3 py-2">
                     <select className="input-field w-40" value={s.reason} onChange={e => updateStoppage(i, 'reason', e.target.value)}>
@@ -312,14 +339,9 @@ function StoppagesTable({ title, formData, setFormData, field, isPreStart }: any
                       {PRE_START_STOP_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                       <option value="custom">سایر (تایپ کنید)</option>
                     </select>
-                    {s.reason === 'custom' && <input type="text" className="input-field w-40 mt-1" placeholder="علت توقف" />}
+                    {s.reason === 'custom' && <input type="text" className="input-field w-40 mt-1" placeholder="علت توقف" value={s.customReason} onChange={e => updateStoppage(i, 'customReason', e.target.value)} />}
                   </td>
                 )}
-                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.from} onChange={e => updateStoppage(i, 'from', e.target.value)} /></td>
-                <td className="px-3 py-2"><input type="time" className="input-field w-28" value={s.till} onChange={e => updateStoppage(i, 'till', e.target.value)} /></td>
-                <td className="px-3 py-2"><input type="number" className="input-field w-20" value={s.minutes} readOnly /></td>
-                <td className="px-3 py-2"><select className="input-field w-40" value={s.workingGroup} onChange={e => updateStoppage(i, 'workingGroup', e.target.value)}><option value="">انتخاب</option>{WORKING_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
-                <td className="px-3 py-2"><input type="text" className="input-field w-48" value={s.description} onChange={e => updateStoppage(i, 'description', e.target.value)} /></td>
               </tr>
             ))}
           </tbody>

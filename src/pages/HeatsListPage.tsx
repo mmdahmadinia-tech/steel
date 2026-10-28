@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { STEEL_GRADES, SHIFTS } from '../data/mockData';
+import JalaliDatePicker from '../components/JalaliDatePicker';
 
 export default function HeatsListPage() {
   const { heats } = useData();
@@ -9,7 +10,8 @@ export default function HeatsListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterShift, setFilterShift] = useState('');
   const [filterGrade, setFilterGrade] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterDateStart, setFilterDateStart] = useState('');
+  const [filterDateEnd, setFilterDateEnd] = useState('');
   const [selectedHeat, setSelectedHeat] = useState<any>(null);
 
   let filteredHeats = heats.filter(h => {
@@ -23,41 +25,109 @@ export default function HeatsListPage() {
     const matchSearch = h.heatId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchShift = !filterShift || h.shift === filterShift;
     const matchGrade = !filterGrade || h.steelGrade === filterGrade;
-    const matchDate = !filterDate || h.date.includes(filterDate);
+    
+    let matchDate = true;
+    if (filterDateStart || filterDateEnd) {
+      const heatDate = h.date.replace(/\//g, '');
+      const startDate = filterDateStart ? filterDateStart.replace(/\//g, '') : '';
+      const endDate = filterDateEnd ? filterDateEnd.replace(/\//g, '') : '';
+      
+      if (startDate && endDate) {
+        matchDate = heatDate >= startDate && heatDate <= endDate;
+      } else if (startDate) {
+        matchDate = heatDate >= startDate;
+      } else if (endDate) {
+        matchDate = heatDate <= endDate;
+      }
+    }
+    
     return matchSearch && matchShift && matchGrade && matchDate;
   });
 
   const exportToExcel = () => {
-    const headers = ['Heat ID', 'Date', 'Shift', 'Grade', 'Tapping Weight', 'Power On', 'Power Off', 'Tap to Tap', 'EAF Status', 'LF Status', 'CCM Status'];
-    const rows = filteredHeats.map(h => [
-      h.heatId,
-      h.date,
-      h.shift,
-      h.steelGrade,
-      h.eafData?.tappingWeight || '',
-      h.eafData?.powerOn || '',
-      h.eafData?.powerOff || '',
-      h.eafData?.tapToTap || '',
-      h.eafStatus,
-      h.lfStatus,
-      h.ccmStatus
-    ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const rows: any[] = [];
+    
+    filteredHeats.forEach(h => {
+      // General Info
+      rows.push(['Heat ID', h.heatId, '', '', '', '']);
+      rows.push(['Date', h.date, '', '', '', '']);
+      rows.push(['Shift', h.shift, '', '', '', '']);
+      rows.push(['Steel Grade', h.steelGrade, '', '', '', '']);
+      rows.push(['', '', '', '', '', '']);
+      
+      // EAF Data
+      if (h.eafData) {
+        rows.push(['=== EAF Data ===', '', '', '', '', '']);
+        rows.push(['Power On (min)', h.eafData.powerOn || '', 'Power Off (min)', h.eafData.powerOff || '', 'Tap to Tap (min)', h.eafData.tapToTap || '']);
+        rows.push(['Tapping Weight (Ton)', h.eafData.tappingWeight || '', 'En.Cou (MWh)', h.eafData.enCou || '', 'Tapping Duration (min)', h.eafData.tappingDuration || '']);
+        
+        if (h.eafData.materials) {
+          rows.push(['', '', '', '', '', '']);
+          rows.push(['--- Materials ---', '', '', '', '', '']);
+          rows.push(['FeMn (Kg)', h.eafData.materials.feMn || '', 'FeSiMn (Kg)', h.eafData.materials.feSiMn || '', 'FeSi (Kg)', h.eafData.materials.feSi || '']);
+          rows.push(['Lime (Kg)', h.eafData.materials.lime || '', 'Carbon (Kg)', h.eafData.materials.carbon || '', 'CPC Injection (Kg)', h.eafData.materials.cpcInjection || '']);
+          rows.push(['Oxygen (Nm³)', h.eafData.materials.oxygen || '', '', '', '', '']);
+        }
+        
+        if (h.eafData.preStoppages && h.eafData.preStoppages.length > 0) {
+          rows.push(['', '', '', '', '', '']);
+          rows.push(['--- Pre-Start Stoppages ---', '', '', '', '', '']);
+          h.eafData.preStoppages.forEach((s: any, i: number) => {
+            if (s.from || s.till) {
+              rows.push([`Stoppage ${i + 1}`, `From: ${s.from}`, `Till: ${s.till}`, `Minutes: ${s.minutes}`, `Group: ${s.workingGroup}`, `Reason: ${s.reason || s.customReason || ''}`]);
+            }
+          });
+        }
+      }
+      
+      rows.push(['', '', '', '', '', '']);
+      
+      // LF Data
+      if (h.lfData) {
+        rows.push(['=== LF Data ===', '', '', '', '', '']);
+        if (h.lfData.additives) {
+          rows.push(['--- Additives ---', '', '', '', '', '']);
+          Object.entries(h.lfData.additives).forEach(([key, value]) => {
+            rows.push([key, value as number, '', '', '', '']);
+          });
+        }
+      }
+      
+      rows.push(['', '', '', '', '', '']);
+      
+      // CCM Data
+      if (h.ccmData) {
+        rows.push(['=== CCM Data ===', '', '', '', '', '']);
+        rows.push(['Avg Casting Speed (m/min)', h.ccmData.avgCastingSpeed || '', 'Line Breaks', h.ccmData.lineBreaks || '', 'Sequence Heats', h.ccmData.sequenceHeats || '']);
+      }
+      
+      rows.push(['', '', '', '', '', '']);
+      rows.push(['========================================', '', '', '', '', '']);
+      rows.push(['', '', '', '', '', '']);
+    });
+    
+    const csv = rows.map(row => row.join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `heats_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `heats_full_report_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
   return (
     <div className="space-y-6">
       <div className="card">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="label-field">تاریخ</label>
-            <input type="text" className="input-field" value={filterDate} onChange={e => setFilterDate(e.target.value)} placeholder="1403/09" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <JalaliDatePicker
+            label="تاریخ شروع"
+            value={filterDateStart}
+            onChange={setFilterDateStart}
+          />
+          <JalaliDatePicker
+            label="تاریخ پایان"
+            value={filterDateEnd}
+            onChange={setFilterDateEnd}
+          />
           <div>
             <label className="label-field">Heat ID</label>
             <input type="text" className="input-field" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="شماره ذوب..." />
@@ -77,8 +147,8 @@ export default function HeatsListPage() {
             </select>
           </div>
         </div>
-        <div className="mt-4">
-          <button onClick={exportToExcel} className="btn-primary">📥 دانلود اکسل</button>
+        <div className="mt-4 flex gap-2">
+          <button onClick={exportToExcel} className="btn-primary">📥 دانلود اکسل (گزارش کامل)</button>
         </div>
       </div>
 
@@ -145,8 +215,8 @@ export default function HeatsListPage() {
               <div className="mb-6">
                 <h4 className="text-lg font-bold text-blue-600 mb-3">⚡ اطلاعات EAF</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-blue-50 p-4 rounded-lg">
-                  <div><p className="text-xs text-gray-600">Power On</p><p className="font-medium">{selectedHeat.eafData.powerOn || '-'}</p></div>
-                  <div><p className="text-xs text-gray-600">Power Off</p><p className="font-medium">{selectedHeat.eafData.powerOff || '-'}</p></div>
+                  <div><p className="text-xs text-gray-600">Power On</p><p className="font-medium">{selectedHeat.eafData.powerOn || '-'} دقیقه</p></div>
+                  <div><p className="text-xs text-gray-600">Power Off</p><p className="font-medium">{selectedHeat.eafData.powerOff || '-'} دقیقه</p></div>
                   <div><p className="text-xs text-gray-600">Tap to Tap</p><p className="font-medium">{selectedHeat.eafData.tapToTap || '-'} دقیقه</p></div>
                   <div><p className="text-xs text-gray-600">En.Cou</p><p className="font-medium">{selectedHeat.eafData.enCou || '-'} MWh</p></div>
                 </div>
