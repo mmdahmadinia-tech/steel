@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import HeatsListPage from './pages/HeatsListPage';
 import HeatDetailPage from './pages/HeatDetailPage';
+import HeatDetailsPage from './pages/HeatDetailsPage';
 import EAFPage from './pages/EAFPage';
 import LFPage from './pages/LFPage';
 import CCMPage from './pages/CCMPage';
@@ -31,6 +32,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />
       <Route path="/heats/:id" element={<ProtectedRoute><HeatDetailPage /></ProtectedRoute>} />
+      <Route path="/heat-details" element={<ProtectedRoute><HeatDetailsPage /></ProtectedRoute>} />
       <Route path="/eaf" element={<ProtectedRoute><EAFPage /></ProtectedRoute>} />
       <Route path="/lf" element={<ProtectedRoute><LFPage /></ProtectedRoute>} />
       <Route path="/ccm" element={<ProtectedRoute><CCMPage /></ProtectedRoute>} />

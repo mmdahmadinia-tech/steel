@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getToday, toFa, padFa } from './JalaliDatePicker';
 
 const menuItems = [
   { path: '/dashboard', label: 'داشبورد', icon: '📊', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
   { path: '/heats', label: 'فهرست ذوب‌ها', icon: '🔥', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
+  { path: '/heat-details', label: 'جزئیات ذوب', icon: '📋', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
   { path: '/eaf', label: 'کوره قوس الکتریکی (EAF)', icon: '⚡', roles: ['admin', 'eaf_user', 'analyst'] },
   { path: '/lf', label: 'کوره پاتیلی (LF)', icon: '🔧', roles: ['admin', 'lf_user', 'analyst'] },
   { path: '/ccm', label: 'ریخته‌گری مداوم (CCM)', icon: '🏭', roles: ['admin', 'ccm_user', 'analyst'] },
@@ -20,6 +22,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const today = getToday();
+      setCurrentDate(`${toFa(today.jy)}/${padFa(today.jm)}/${padFa(today.jd)}`);
+      setCurrentTime(now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredMenuItems = menuItems.filter(item => user && item.roles.includes(user.role));
 
@@ -70,9 +86,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-gray-500">STEELMETRICS — steelmetrics.ir</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
-            <span className="text-xs text-gray-600">آنلاین</span>
+          <div className="flex items-center gap-4">
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-blue-600">{currentDate}</span>
+                <span className="text-sm text-gray-600">{currentTime}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+              <span className="text-xs text-gray-600">آنلاین</span>
+            </div>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
