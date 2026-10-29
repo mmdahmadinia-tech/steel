@@ -24,31 +24,30 @@ echo [OK] Node.js:
 node --version
 echo.
 
-REM Install if needed
-if not exist "node_modules\" (
-    echo [INFO] Installing (first time)...
-    call npm install
-    if %errorlevel% neq 0 (
-        echo [ERROR] Installation failed!
-        pause
-        exit /b 1
-    )
-    echo [OK] Done
+REM Install dependencies
+echo [INFO] Installing dependencies...
+call npm install
+if %errorlevel% neq 0 (
     echo.
+    echo [ERROR] Installation failed!
+    echo Please check your internet connection.
+    pause
+    exit /b 1
 )
+echo [OK] Dependencies installed
+echo.
 
-REM Build if needed
-if not exist "dist\index.html" (
-    echo [INFO] Building...
-    call npm run build
-    if %errorlevel% neq 0 (
-        echo [ERROR] Build failed!
-        pause
-        exit /b 1
-    )
-    echo [OK] Done
+REM Build
+echo [INFO] Building application...
+call npx vite build
+if %errorlevel% neq 0 (
     echo.
+    echo [ERROR] Build failed!
+    pause
+    exit /b 1
 )
+echo [OK] Build completed
+echo.
 
 echo [OK] Starting server on port 3001...
 echo.
@@ -69,12 +68,6 @@ echo.
 timeout /t 2 /nobreak >nul
 start http://localhost:3001
 
-npx serve dist -l 3001
-
-if %errorlevel% neq 0 (
-    echo [ERROR] Server failed to start!
-    pause
-    exit /b 1
-)
+call npx serve dist -l 3001
 
 pause
