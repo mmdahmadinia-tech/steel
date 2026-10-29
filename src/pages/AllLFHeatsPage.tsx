@@ -220,12 +220,28 @@ export default function AllLFHeatsPage() {
       'PPM', 'Slag Thickness', 'Free Board',
       'Ladle Number', 'Change Ladle', 'Slag Line Life', 'Ladle Life', 'Transfercar Number',
       'Line 1', 'Line 2',
-      'الکترود فاز 1', 'الکترود فاز 2', 'الکترود فاز 3',
+      // الکترودها - 9 ستون
+      'تعویض فاز 1', 'تعویض فاز 2', 'تعویض فاز 3',
+      'تنظیم فاز 1', 'تنظیم فاز 2', 'تنظیم فاز 3',
+      'شکست فاز 1', 'شکست فاز 2', 'شکست فاز 3',
+      // آنالیز شیمیایی - 18 ستون
       'نمونه 1 (C)', 'نمونه 1 (Si)', 'نمونه 1 (Mn)', 'نمونه 1 (P)', 'نمونه 1 (S)', 'نمونه 1 (Al)',
       'نمونه 2 (C)', 'نمونه 2 (Si)', 'نمونه 2 (Mn)', 'نمونه 2 (P)', 'نمونه 2 (S)', 'نمونه 2 (Al)',
       'نمونه 3 (C)', 'نمونه 3 (Si)', 'نمونه 3 (Mn)', 'نمونه 3 (P)', 'نمونه 3 (S)', 'نمونه 3 (Al)',
-      'داده فرایندی 1 (Time)', 'داده فرایندی 1 (Temp)', 'داده فرایندی 1 (PPM)',
-      'توقف 1 (From)', 'توقف 1 (Till)', 'توقف 1 (Minute)'
+      // داده‌های فرایندی - 27 ستون (9 ردیف × 3 ستون)
+      'داده 1 (Time)', 'داده 1 (Temp)', 'داده 1 (PPM)',
+      'داده 2 (Time)', 'داده 2 (Temp)', 'داده 2 (PPM)',
+      'داده 3 (Time)', 'داده 3 (Temp)', 'داده 3 (PPM)',
+      'داده 4 (Time)', 'داده 4 (Temp)', 'داده 4 (PPM)',
+      'داده 5 (Time)', 'داده 5 (Temp)', 'داده 5 (PPM)',
+      'داده 6 (Time)', 'داده 6 (Temp)', 'داده 6 (PPM)',
+      'داده 7 (Time)', 'داده 7 (Temp)', 'داده 7 (PPM)',
+      'داده 8 (Time)', 'داده 8 (Temp)', 'داده 8 (PPM)',
+      'داده 9 (Time)', 'داده 9 (Temp)', 'داده 9 (PPM)',
+      // توقفات - 9 ستون (3 ردیف × 3 ستون)
+      'توقف 1 (From)', 'توقف 1 (Till)', 'توقف 1 (Minute)',
+      'توقف 2 (From)', 'توقف 2 (Till)', 'توقف 2 (Minute)',
+      'توقف 3 (From)', 'توقف 3 (Till)', 'توقف 3 (Minute)'
     ]);
 
     filteredHeats.forEach(h => {
@@ -240,21 +256,21 @@ export default function AllLFHeatsPage() {
         }
       });
       
-      // الکترودها
+      // الکترودها - بررسی هر وضعیت
       const phase1 = lf.electrodeStatus?.phase1 || [];
       const phase2 = lf.electrodeStatus?.phase2 || [];
       const phase3 = lf.electrodeStatus?.phase3 || [];
       
-      // آنالیز شیمیایی
+      // آنالیز شیمیایی - 3 نمونه
       const sample1 = lf.chemicalAnalysis?.sample1 || {};
       const sample2 = lf.chemicalAnalysis?.sample2 || {};
       const sample3 = lf.chemicalAnalysis?.sample3 || {};
       
-      // داده فرایندی اول
-      const processData1 = lf.processData?.[0] || {};
+      // داده‌های فرایندی - تمام 9 ردیف
+      const processData = lf.processData || [];
       
-      // توقف اول
-      const stoppage1 = lf.stoppages?.[0] || {};
+      // توقفات - تمام 3 ردیف
+      const stoppages = lf.stoppages || [];
       
       rows.push([
         h.heatId,
@@ -294,20 +310,36 @@ export default function AllLFHeatsPage() {
         lf.ladleStatus?.transfercarNumber || '',
         lf.stringStatus?.line1 || '',
         lf.stringStatus?.line2 || '',
-        // الکترودها
-        phase1.join(', ') || '',
-        phase2.join(', ') || '',
-        phase3.join(', ') || '',
+        // الکترودها - 9 ستون (تعویض، تنظیم، شکست برای هر فاز)
+        phase1.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase2.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase3.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase1.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        phase2.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        phase3.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        phase1.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
+        phase2.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
+        phase3.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
         // آنالیز نمونه 1
         sample1.c || 0, sample1.si || 0, sample1.mn || 0, sample1.p || 0, sample1.s || 0, sample1.al || 0,
         // آنالیز نمونه 2
         sample2.c || 0, sample2.si || 0, sample2.mn || 0, sample2.p || 0, sample2.s || 0, sample2.al || 0,
         // آنالیز نمونه 3
         sample3.c || 0, sample3.si || 0, sample3.mn || 0, sample3.p || 0, sample3.s || 0, sample3.al || 0,
-        // داده فرایندی اول
-        processData1.time || '', processData1.temp || 0, processData1.ppm || 0,
-        // توقف اول
-        stoppage1.from || '', stoppage1.till || '', stoppage1.minutes || 0,
+        // داده‌های فرایندی - تمام 9 ردیف (Time, Temp, PPM)
+        processData[0]?.time || '', processData[0]?.temp || 0, processData[0]?.ppm || 0,
+        processData[1]?.time || '', processData[1]?.temp || 0, processData[1]?.ppm || 0,
+        processData[2]?.time || '', processData[2]?.temp || 0, processData[2]?.ppm || 0,
+        processData[3]?.time || '', processData[3]?.temp || 0, processData[3]?.ppm || 0,
+        processData[4]?.time || '', processData[4]?.temp || 0, processData[4]?.ppm || 0,
+        processData[5]?.time || '', processData[5]?.temp || 0, processData[5]?.ppm || 0,
+        processData[6]?.time || '', processData[6]?.temp || 0, processData[6]?.ppm || 0,
+        processData[7]?.time || '', processData[7]?.temp || 0, processData[7]?.ppm || 0,
+        processData[8]?.time || '', processData[8]?.temp || 0, processData[8]?.ppm || 0,
+        // توقفات - تمام 3 ردیف (From, Till, Minute)
+        stoppages[0]?.from || '', stoppages[0]?.till || '', stoppages[0]?.minutes || 0,
+        stoppages[1]?.from || '', stoppages[1]?.till || '', stoppages[1]?.minutes || 0,
+        stoppages[2]?.from || '', stoppages[2]?.till || '', stoppages[2]?.minutes || 0,
       ]);
     });
 
