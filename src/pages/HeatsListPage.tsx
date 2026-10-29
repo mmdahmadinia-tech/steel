@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { STEEL_GRADES, SHIFTS } from '../data/mockData';
 import JalaliDatePicker from '../components/JalaliDatePicker';
 
 export default function HeatsListPage() {
   const { heats } = useData();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterShift, setFilterShift] = useState('');
   const [filterGrade, setFilterGrade] = useState('');
@@ -86,6 +88,7 @@ export default function HeatsListPage() {
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">EAF</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">LF</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">CCM</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">عملیات</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -98,6 +101,14 @@ export default function HeatsListPage() {
                   <td className="px-4 py-3"><StatusBadge status={heat.eafStatus} /></td>
                   <td className="px-4 py-3"><StatusBadge status={heat.lfStatus} /></td>
                   <td className="px-4 py-3"><StatusBadge status={heat.ccmStatus} /></td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => navigate(`/heats/${heat.id}`)}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                      مشاهده ←
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

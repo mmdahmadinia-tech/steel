@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import HeatsListPage from './pages/HeatsListPage';
+import HeatDetailPage from './pages/HeatDetailPage';
 import AllEAFHeatsPage from './pages/AllEAFHeatsPage';
 import EAFPage from './pages/EAFPage';
 import LFPage from './pages/LFPage';
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />
+      <Route path="/heats/:id" element={<ProtectedRoute><HeatDetailPage /></ProtectedRoute>} />
       <Route path="/all-eaf-heats" element={<ProtectedRoute><AllEAFHeatsPage /></ProtectedRoute>} />
       <Route path="/eaf" element={<ProtectedRoute><EAFPage /></ProtectedRoute>} />
       <Route path="/lf" element={<ProtectedRoute><LFPage /></ProtectedRoute>} />
