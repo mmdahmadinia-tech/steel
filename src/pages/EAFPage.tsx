@@ -74,6 +74,19 @@ export default function EAFPage() {
     shiftSupervisorNotes: '',
   });
 
+  // Calculate refractory values based on previous heat
+  const previousRefractory = useMemo(() => {
+    const previousHeats = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id));
+    const prev = previousHeats[0];
+    const prevRefractory = (prev?.eafData as any)?.refractoryCounters;
+    return {
+      walls: prevRefractory ? (prevRefractory.walls || 0) + 1 : 0,
+      centerPiece: prevRefractory ? (prevRefractory.centerPiece || 0) + 1 : 0,
+      bottom: prevRefractory ? (prevRefractory.bottom || 0) + 1 : 0,
+      taphole: prevRefractory ? (prevRefractory.taphole || 0) + 1 : 0,
+    };
+  }, [heats]);
+
   // Load data when heat is selected
   useEffect(() => {
     if (selectedHeatId) {
@@ -152,21 +165,9 @@ export default function EAFPage() {
         });
       }
     } else {
-      // New heat - auto-increment refractory from previous heat
-      const previousHeats = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id));
-      const prev = previousHeats[0];
-      const prevRefractory = (prev?.eafData as any)?.refractoryCounters;
-      
-      // محاسبه مقادیر جدید
-      const newWalls = prevRefractory ? (prevRefractory.walls || 0) + 1 : 0;
-      const newCenterPiece = prevRefractory ? (prevRefractory.centerPiece || 0) + 1 : 0;
-      const newBottom = prevRefractory ? (prevRefractory.bottom || 0) + 1 : 0;
-      const newTaphole = prevRefractory ? (prevRefractory.taphole || 0) + 1 : 0;
-      
-      console.log('=== NEW HEAT - Auto-increment Refractory ===');
-      console.log('Previous heat:', prev?.heatId);
-      console.log('Previous refractory:', prevRefractory);
-      console.log('New values:', { walls: newWalls, centerPiece: newCenterPiece, bottom: newBottom, taphole: newTaphole });
+      // New heat - use calculated refractory values from useMemo
+      console.log('=== NEW HEAT - Using calculated refractory ===');
+      console.log('Previous refractory + 1:', previousRefractory);
       
       setForm({
         date: getTodayJalali(),
@@ -179,10 +180,10 @@ export default function EAFPage() {
         carbonPercent: 0,
         ppm: 0,
         powerOn: 0,
-        walls: newWalls,
-        centerPiece: newCenterPiece,
-        bottom: newBottom,
-        taphole: newTaphole,
+        walls: previousRefractory.walls,
+        centerPiece: previousRefractory.centerPiece,
+        bottom: previousRefractory.bottom,
+        taphole: previousRefractory.taphole,
         sampleTime: '', sampleTemp: 0, sampleTap: 0, sampleEnCou: 0,
         sampleDri: 0, sampleBriquet: 0, sampleDolomite: 0,
         sampleLimeMHU: 0, sampleCarbonMHU: 0, sampleCpcMHU: 0,
@@ -206,7 +207,7 @@ export default function EAFPage() {
         shiftSupervisorNotes: '',
       });
     }
-  }, [selectedHeatId, heats]);
+  }, [selectedHeatId, heats, previousRefractory]);
 
   const calculated = useMemo(() => {
     const tappingDuration = calcMinutes(form.tappingStartTime, form.tappingEndTime);

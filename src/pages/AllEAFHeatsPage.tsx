@@ -104,15 +104,22 @@ export default function AllEAFHeatsPage() {
     rows.push(['Sampler', eaf.consumables?.sampler || 0]);
     rows.push(['Oxy. Probe', eaf.consumables?.oxyProbe || 0]);
     rows.push(['Taphole Sand (Kg)', eaf.consumables?.tapholeSand || 0]);
-    rows.push(['الکترود فاز 1 تعویض', eaf.electrodeStatus?.phase1?.includes('Changing — تعویض') ? 'بله' : 'خیر']);
-    rows.push(['الکترود فاز 2 تعویض', eaf.electrodeStatus?.phase2?.includes('Changing — تعویض') ? 'بله' : 'خیر']);
-    rows.push(['الکترود فاز 3 تعویض', eaf.electrodeStatus?.phase3?.includes('Changing — تعویض') ? 'بله' : 'خیر']);
-    rows.push(['شکستن فاز 1', eaf.electrodeStatus?.phase1?.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
-    rows.push(['شکستن فاز 2', eaf.electrodeStatus?.phase2?.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
-    rows.push(['شکستن فاز 3', eaf.electrodeStatus?.phase3?.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
-    rows.push(['تنظیم فاز 1', eaf.electrodeStatus?.phase1?.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
-    rows.push(['تنظیم فاز 2', eaf.electrodeStatus?.phase2?.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
-    rows.push(['تنظیم فاز 3', eaf.electrodeStatus?.phase3?.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
+    
+    // الکترودها
+    const phase1 = eaf.electrodeStatus?.phase1 || [];
+    const phase2 = eaf.electrodeStatus?.phase2 || [];
+    const phase3 = eaf.electrodeStatus?.phase3 || [];
+    
+    rows.push(['الکترود فاز 1 تعویض', phase1.includes('Changing — تعویض') ? 'بله' : 'خیر']);
+    rows.push(['الکترود فاز 2 تعویض', phase2.includes('Changing — تعویض') ? 'بله' : 'خیر']);
+    rows.push(['الکترود فاز 3 تعویض', phase3.includes('Changing — تعویض') ? 'بله' : 'خیر']);
+    rows.push(['شکستن فاز 1', phase1.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
+    rows.push(['شکستن فاز 2', phase2.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
+    rows.push(['شکستن فاز 3', phase3.includes('Breaking — شکستگی') ? 'بله' : 'خیر']);
+    rows.push(['تنظیم فاز 1', phase1.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
+    rows.push(['تنظیم فاز 2', phase2.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
+    rows.push(['تنظیم فاز 3', phase3.includes('Adjusting — تنظیم') ? 'بله' : 'خیر']);
+    
     rows.push(['Ladle Number', eaf.ladleInfo?.ladleNumber || '']);
     rows.push(['Slag Condition', eaf.ladleInfo?.slagCondition || '']);
     rows.push(['Wall Condition', eaf.ladleInfo?.wallCondition || '']);
