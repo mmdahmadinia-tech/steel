@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getToday, toFa, padFa } from './JalaliDatePicker';
+import NotificationBell from './NotificationBell';
+import ThemeToggle from './ThemeToggle';
 
 const menuItems = [
   { path: '/dashboard', label: 'داشبورد', icon: '📊', roles: ['admin', 'eaf_user', 'lf_user', 'ccm_user', 'analyst'] },
@@ -12,6 +14,7 @@ const menuItems = [
   { path: '/lf', label: 'کوره پاتیلی (LF)', icon: '🔧', roles: ['admin', 'lf_user', 'analyst'] },
   { path: '/ccm', label: 'ریخته‌گری مداوم (CCM)', icon: '🏭', roles: ['admin', 'ccm_user', 'analyst'] },
   { path: '/reports', label: 'گزارش‌ها و تحلیل', icon: '📈', roles: ['admin', 'analyst'] },
+  { path: '/send-message', label: 'ارسال پیام', icon: '📢', roles: ['admin'] },
   { path: '/users', label: 'مدیریت کاربران', icon: '👥', roles: ['admin'] },
   { path: '/audit', label: 'سوابق تغییرات', icon: '📋', roles: ['admin'] },
   { path: '/backup', label: 'پشتیبان‌گیری', icon: '💾', roles: ['admin'] },
@@ -95,8 +98,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
-              <span className="text-xs text-gray-600">آنلاین</span>
+              <NotificationBell />
+              <ThemeToggle />
+              <div className="flex items-center gap-2 border-r border-gray-200 pr-2">
+                <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+                <span className="text-xs text-gray-600">آنلاین</span>
+              </div>
             </div>
           </div>
         </header>

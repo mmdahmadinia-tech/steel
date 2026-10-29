@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 export default function HeatDetailsPage() {
-  const { heats } = useData();
+  const { heats, deleteHeat, deleteAllHeats } = useData();
+  const { user } = useAuth();
   const [selectedHeatId, setSelectedHeatId] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   
   const selectedHeat = heats.find(h => h.id === selectedHeatId);
   const eaf = selectedHeat?.eafData as any;
+
+  const handleDeleteHeat = () => {
+    if (selectedHeatId) {
+      deleteHeat(selectedHeatId);
+      setSelectedHeatId('');
+      setShowDeleteConfirm(false);
+      alert('ذوب با موفقیت حذف شد');
+    }
+  };
+
+  const handleDeleteAllHeats = () => {
+    deleteAllHeats();
+    setSelectedHeatId('');
+    setShowDeleteAllConfirm(false);
+    alert('تمام ذوب‌ها با موفقیت حذف شدند');
+  };
 
   return (
     <div className="space-y-6">
@@ -17,7 +37,17 @@ export default function HeatDetailsPage() {
       </div>
 
       <div className="card">
-        <label className="label-field">انتخاب ذوب</label>
+        <div className="flex items-center justify-between mb-4">
+          <label className="label-field mb-0">انتخاب ذوب</label>
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => setShowDeleteAllConfirm(true)}
+              className="btn-danger text-sm"
+            >
+              🗑️ حذف تمام ذوب‌ها
+            </button>
+          )}
+        </div>
         <select
           value={selectedHeatId}
           onChange={e => setSelectedHeatId(e.target.value)}
@@ -30,7 +60,65 @@ export default function HeatDetailsPage() {
             </option>
           ))}
         </select>
+        
+        {selectedHeat && user?.role === 'admin' && (
+          <div className="flex items-center gap-3 mt-4">
+            <Link to={`/eaf?edit=${selectedHeatId}`} className="btn-primary text-sm">
+              ✏️ ویرایش ذوب
+            </Link>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="btn-danger text-sm"
+            >
+              🗑️ حذف ذوب
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">⚠️ تأیید حذف</h3>
+            <p className="text-gray-600 mb-6">
+              آیا مطمئن هستید که می‌خواهید ذوب <strong>{selectedHeat?.heatId}</strong> را حذف کنید؟
+              <br />
+              <span className="text-red-600 text-sm">این عملیات قابل بازگشت نیست!</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={handleDeleteHeat} className="btn-danger flex-1">
+                بله، حذف شود
+              </button>
+              <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary flex-1">
+                انصراف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Confirmation Modal */}
+      {showDeleteAllConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">⚠️ تأیید حذف تمام ذوب‌ها</h3>
+            <p className="text-gray-600 mb-6">
+              آیا مطمئن هستید که می‌خواهید <strong>تمام {heats.length} ذوب</strong> را حذف کنید؟
+              <br />
+              <span className="text-red-600 text-sm">این عملیات قابل بازگشت نیست و تمام داده‌ها از بین می‌روند!</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={handleDeleteAllHeats} className="btn-danger flex-1">
+                بله، حذف شوند
+              </button>
+              <button onClick={() => setShowDeleteAllConfirm(false)} className="btn-secondary flex-1">
+                انصراف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedHeat ? (
         <div className="space-y-4">

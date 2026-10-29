@@ -2,6 +2,8 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -17,6 +19,7 @@ import UsersPage from './pages/UsersPage';
 import AuditLogPage from './pages/AuditLogPage';
 import BackupPage from './pages/BackupPage';
 import ProfilePage from './pages/ProfilePage';
+import SendMessagePage from './pages/SendMessagePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -34,6 +37,7 @@ function AppRoutes() {
       <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />
       <Route path="/heats/:id" element={<ProtectedRoute><HeatDetailPage /></ProtectedRoute>} />
       <Route path="/heat-details" element={<ProtectedRoute><HeatDetailsPage /></ProtectedRoute>} />
+      <Route path="/send-message" element={<ProtectedRoute><SendMessagePage /></ProtectedRoute>} />
       <Route path="/all-eaf-heats" element={<ProtectedRoute><AllEAFHeatsPage /></ProtectedRoute>} />
       <Route path="/eaf" element={<ProtectedRoute><EAFPage /></ProtectedRoute>} />
       <Route path="/lf" element={<ProtectedRoute><LFPage /></ProtectedRoute>} />
@@ -51,11 +55,15 @@ function AppRoutes() {
 export default function App() {
   return (
     <HashRouter>
-      <AuthProvider>
-        <DataProvider>
-          <AppRoutes />
-        </DataProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <DataProvider>
+            <NotificationProvider>
+              <AppRoutes />
+            </NotificationProvider>
+          </DataProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </HashRouter>
   );
 }
