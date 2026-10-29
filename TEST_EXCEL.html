@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست خروجی اکسل - STEELMETRICS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .alert {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .alert h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .alert p {
+            color: #92400e;
+            line-height: 1.8;
+        }
+        .success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success h3 {
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+        .steps {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .step:hover {
+            border-color: #667eea;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+        .step-content h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .step-content code {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .columns {
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .columns h3 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        .column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .column-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #b3d9ff;
+            font-size: 13px;
+        }
+        .column-item.new {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+        .footer p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 تست خروجی اکسل 60 ستون</h1>
+        
+        <div class="alert">
+            <h3>⚠️ مشکل: تغییرات اعمال نشده</h3>
+            <p>
+                اگر خروجی اکسل هنوز 47 ستون دارد و الکترودها و آنالیز شیمیایی را نشان نمی‌دهد،
+                لطفاً مراحل زیر را دنبال کنید.
+            </p>
+        </div>
+
+        <div class="steps">
+            <h2 style="margin-bottom: 20px; color: #333;">🚀 مراحل حل مشکل</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>پاک کردن Cache مرورگر</h3>
+                    <p>
+                        کلید <code>Ctrl + Shift + R</code> را بزنید (Hard Refresh)<br>
+                        یا <code>Ctrl + F5</code><br>
+                        این کار فایل‌های قدیمی را از cache پاک می‌کند.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>رفتن به صفحه صحیح</h3>
+                    <p>
+                        از منوی سمت راست، روی <strong>"📊 کلیه ذوب‌های EAF"</strong> کلیک کنید.<br>
+                        این صفحه لیست تمام ذوب‌های ثبت شده را نشان می‌دهد.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>استفاده از دکمه صحیح</h3>
+                    <p>
+                        در بالای صفحه، بخش "🔍 فیلترها" را ببینید.<br>
+                        روی دکمه <strong>"📥 دانلود اکسل همه ذوب‌ها"</strong> کلیک کنید.<br>
+                        <span style="color: #dc2626; font-weight: bold;">
+                            ⚠️ توجه: از دکمه "📥" کنار هر ذوب استفاده نکنید!
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>بررسی فایل اکسل</h3>
+                    <p>
+                        فایل دانلود شده را باز کنید.<br>
+                        باید <strong>60 ستون</strong> داشته باشد.<br>
+                        ردیف اول (Header) را بررسی کنید:
+                    </p>
+                    <ul style="margin-top: 10px; margin-right: 20px; line-height: 1.8;">
+                        <li>ستون‌های 38-42: آنالیز C, Si, Mn, P, S</li>
+                        <li>ستون‌های 49-57: الکترود فاز 1/2/3 تعویض، شکستن، تنظیم</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="columns">
+            <h3>📊 60 ستون خروجی اکسل</h3>
+            <div class="column-grid">
+                <div class="column-item">1. HEAT ID</div>
+                <div class="column-item">2. تاریخ</div>
+                <div class="column-item">3. گرید</div>
+                <div class="column-item">4. شیفت</div>
+                <div class="column-item">5. شروع ذوب</div>
+                <div class="column-item">6. شروع تخلیه</div>
+                <div class="column-item">7. پایان تخلیه</div>
+                <div class="column-item">8. مدت تخلیه</div>
+                <div class="column-item">9. DRI (Ton)</div>
+                <div class="column-item">10. Briquet (Ton)</div>
+                <div class="column-item">11. جمع قراضه</div>
+                <div class="column-item">12. TAP Sample</div>
+                <div class="column-item">13. TAP Tapping</div>
+                <div class="column-item">14. Power On</div>
+                <div class="column-item">15. Power Off</div>
+                <div class="column-item">16. Tap to Tap</div>
+                <div class="column-item">17. Walls</div>
+                <div class="column-item">18. Center Piece</div>
+                <div class="column-item">19. Bottom</div>
+                <div class="column-item">20. Taphole</div>
+                <div class="column-item">21. En.Cou (MWh)</div>
+                <div class="column-item">22. FeMn</div>
+                <div class="column-item">23. FeSiMn</div>
+                <div class="column-item">24. FeSi</div>
+                <div class="column-item">25. Ca.Al</div>
+                <div class="column-item">26. AL</div>
+                <div class="column-item">27. CaC2</div>
+                <div class="column-item">28. Dolomite</div>
+                <div class="column-item">29. Lime MHU</div>
+                <div class="column-item">30. Lime</div>
+                <div class="column-item">31. Carbon MHU</div>
+                <div class="column-item">32. CPC Injection</div>
+                <div class="column-item">33. CPC MHU</div>
+                <div class="column-item">34. Graphite</div>
+                <div class="column-item">35. CH4</div>
+                <div class="column-item">36. Oxygen</div>
+                <div class="column-item">37. وزن تخلیه</div>
+                <div class="column-item new">38. آنالیز C ✨</div>
+                <div class="column-item new">39. آنالیز Si ✨</div>
+                <div class="column-item new">40. آنالیز Mn ✨</div>
+                <div class="column-item new">41. آنالیز P ✨</div>
+                <div class="column-item new">42. آنالیز S ✨</div>
+                <div class="column-item">43. PPM</div>
+                <div class="column-item">44. کربن %</div>
+                <div class="column-item">45. Thermocouple</div>
+                <div class="column-item">46. Sampler</div>
+                <div class="column-item">47. Oxy Probe</div>
+                <div class="column-item">48. Taphole Sand</div>
+                <div class="column-item new">49. الکترود فاز 1 تعویض ✨</div>
+                <div class="column-item new">50. الکترود فاز 2 تعویض ✨</div>
+                <div class="column-item new">51. الکترود فاز 3 تعویض ✨</div>
+                <div class="column-item new">52. شکستن فاز 1 ✨</div>
+                <div class="column-item new">53. شکستن فاز 2 ✨</div>
+                <div class="column-item new">54. شکستن فاز 3 ✨</div>
+                <div class="column-item new">55. تنظیم فاز 1 ✨</div>
+                <div class="column-item new">56. تنظیم فاز 2 ✨</div>
+                <div class="column-item new">57. تنظیم فاز 3 ✨</div>
+                <div class="column-item">58. Ladle</div>
+                <div class="column-item">59. Slag</div>
+                <div class="column-item">60. Wall</div>
+                <div class="column-item">61. توضیحات سرشیفت</div>
+            </div>
+            <p style="margin-top: 15px; color: #0066cc; font-size: 14px;">
+                ✨ = ستون‌های جدید اضافه شده
+            </p>
+        </div>
+
+        <div class="success">
+            <h3>✅ نتیجه موفقیت‌آمیز</h3>
+            <p>
+                اگر تمام مراحل را درست انجام دهید، فایل اکسل باید:<br>
+                ✓ 60 ستون داشته باشد<br>
+                ✓ ستون‌های 38-42: آنالیز شیمیایی (C, Si, Mn, P, S)<br>
+                ✓ ستون‌های 49-57: الکترودها (تعویض، شکستن، تنظیم)<br>
+                ✓ مقادیر "بله" یا "خیر" برای الکترودها
+            </p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://localhost:3001" class="button">🚀 باز کردن سامانه</a>
+            <a href="EXCEL_FIX_GUIDE.md" class="button">📖 راهنمای کامل</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>STEELMETRICS v1.0</strong></p>
+            <p>سامانه مدیریت و تحلیل تولید فولاد</p>
+            <p><a href="https://steelmetrics.ir" target="_blank">steelmetrics.ir</a></p>
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                پشتیبانی: support@steelmetrics.ir
+            </p>
+        </div>
+    </div>
+</body>
+</html>
