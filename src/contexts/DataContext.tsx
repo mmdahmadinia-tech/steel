@@ -5,6 +5,8 @@ interface DataContextType {
   heats: Heat[];
   addHeat: (heat: Heat) => void;
   updateHeat: (id: string, data: Partial<Heat>) => void;
+  deleteHeat: (id: string) => void;
+  deleteAllHeats: () => void;
   getNextHeatId: () => string;
 }
 
@@ -30,6 +32,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveHeats(newHeats);
   };
 
+  const deleteHeat = (id: string) => {
+    const newHeats = heats.filter(h => h.id !== id);
+    saveHeats(newHeats);
+  };
+
+  const deleteAllHeats = () => {
+    saveHeats([]);
+  };
+
   const getNextHeatId = (): string => {
     const nums = heats.map(h => parseInt(h.heatId)).filter(n => !isNaN(n));
     const max = nums.length > 0 ? Math.max(...nums) : 1249;
@@ -37,7 +48,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DataContext.Provider value={{ heats, addHeat, updateHeat, getNextHeatId }}>
+    <DataContext.Provider value={{ heats, addHeat, updateHeat, deleteHeat, deleteAllHeats, getNextHeatId }}>
       {children}
     </DataContext.Provider>
   );

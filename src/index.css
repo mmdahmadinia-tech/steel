@@ -7,6 +7,81 @@
 body {
   direction: rtl;
   background-color: #f8fafc;
+  transition: background-color 0.3s ease;
+}
+
+/* Dark Mode Styles */
+.dark body {
+  background-color: #0f172a;
+}
+
+.dark .card {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark .input-field {
+  background-color: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+.dark .label-field {
+  color: #cbd5e1;
+}
+
+.dark .btn-secondary {
+  background-color: #475569;
+  color: #e2e8f0;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #64748b;
+}
+
+.dark table {
+  color: #e2e8f0;
+}
+
+.dark thead {
+  background-color: #334155;
+}
+
+.dark tbody tr:hover {
+  background-color: #1e293b;
+}
+
+.dark .text-gray-800 {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-600 {
+  color: #94a3b8;
+}
+
+.dark .text-gray-500 {
+  color: #64748b;
+}
+
+.dark .bg-gray-50 {
+  background-color: #1e293b;
+}
+
+.dark .bg-white {
+  background-color: #1e293b;
+}
+
+.dark .border-gray-200 {
+  border-color: #334155;
+}
+
+.dark .border-gray-100 {
+  border-color: #334155;
 }
 
 ::-webkit-scrollbar {
