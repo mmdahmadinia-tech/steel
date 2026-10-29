@@ -318,8 +318,14 @@ export default function EAFPage() {
         createdAt: new Date().toLocaleString('fa-IR'),
         updatedAt: new Date().toLocaleString('fa-IR'),
       });
-      setSelectedHeatId(newHeatId);
+      // Don't select the new heat - stay on "new heat" mode
+      // This allows the next heat to auto-increment refractory values
       setSaveMessage(`✅ ذوب ${newHeatId} با موفقیت ثبت شد`);
+      
+      // Reset form for next heat with auto-incremented refractory
+      setTimeout(() => {
+        setSelectedHeatId('');
+      }, 100);
     } else {
       const heat = heats.find(h => h.heatId === selectedHeatId);
       if (heat) {
