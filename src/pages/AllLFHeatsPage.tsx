@@ -208,7 +208,7 @@ export default function AllLFHeatsPage() {
   const exportAllToExcel = () => {
     const rows: any[] = [];
     
-    // Header - 40 ستون
+    // Header
     rows.push([
       'شماره ذوب', 'تاریخ', 'شیفت', 'گرید',
       'Input Time', 'Delivery Time to CCM', 'Temperature (°C)',
@@ -219,7 +219,13 @@ export default function AllLFHeatsPage() {
       'Time String', 'Argon Consumption', 'Thermocouple', 'Sampler', 'Oxy. Probe',
       'PPM', 'Slag Thickness', 'Free Board',
       'Ladle Number', 'Change Ladle', 'Slag Line Life', 'Ladle Life', 'Transfercar Number',
-      'Line 1', 'Line 2'
+      'Line 1', 'Line 2',
+      'الکترود فاز 1', 'الکترود فاز 2', 'الکترود فاز 3',
+      'نمونه 1 (C)', 'نمونه 1 (Si)', 'نمونه 1 (Mn)', 'نمونه 1 (P)', 'نمونه 1 (S)', 'نمونه 1 (Al)',
+      'نمونه 2 (C)', 'نمونه 2 (Si)', 'نمونه 2 (Mn)', 'نمونه 2 (P)', 'نمونه 2 (S)', 'نمونه 2 (Al)',
+      'نمونه 3 (C)', 'نمونه 3 (Si)', 'نمونه 3 (Mn)', 'نمونه 3 (P)', 'نمونه 3 (S)', 'نمونه 3 (Al)',
+      'داده فرایندی 1 (Time)', 'داده فرایندی 1 (Temp)', 'داده فرایندی 1 (PPM)',
+      'توقف 1 (From)', 'توقف 1 (Till)', 'توقف 1 (Minute)'
     ]);
 
     filteredHeats.forEach(h => {
@@ -233,6 +239,22 @@ export default function AllLFHeatsPage() {
           additiveTotals[key] = additives[key].reduce((sum: number, val: number) => sum + val, 0);
         }
       });
+      
+      // الکترودها
+      const phase1 = lf.electrodeStatus?.phase1 || [];
+      const phase2 = lf.electrodeStatus?.phase2 || [];
+      const phase3 = lf.electrodeStatus?.phase3 || [];
+      
+      // آنالیز شیمیایی
+      const sample1 = lf.chemicalAnalysis?.sample1 || {};
+      const sample2 = lf.chemicalAnalysis?.sample2 || {};
+      const sample3 = lf.chemicalAnalysis?.sample3 || {};
+      
+      // داده فرایندی اول
+      const processData1 = lf.processData?.[0] || {};
+      
+      // توقف اول
+      const stoppage1 = lf.stoppages?.[0] || {};
       
       rows.push([
         h.heatId,
@@ -272,6 +294,20 @@ export default function AllLFHeatsPage() {
         lf.ladleStatus?.transfercarNumber || '',
         lf.stringStatus?.line1 || '',
         lf.stringStatus?.line2 || '',
+        // الکترودها
+        phase1.join(', ') || '',
+        phase2.join(', ') || '',
+        phase3.join(', ') || '',
+        // آنالیز نمونه 1
+        sample1.c || 0, sample1.si || 0, sample1.mn || 0, sample1.p || 0, sample1.s || 0, sample1.al || 0,
+        // آنالیز نمونه 2
+        sample2.c || 0, sample2.si || 0, sample2.mn || 0, sample2.p || 0, sample2.s || 0, sample2.al || 0,
+        // آنالیز نمونه 3
+        sample3.c || 0, sample3.si || 0, sample3.mn || 0, sample3.p || 0, sample3.s || 0, sample3.al || 0,
+        // داده فرایندی اول
+        processData1.time || '', processData1.temp || 0, processData1.ppm || 0,
+        // توقف اول
+        stoppage1.from || '', stoppage1.till || '', stoppage1.minutes || 0,
       ]);
     });
 
