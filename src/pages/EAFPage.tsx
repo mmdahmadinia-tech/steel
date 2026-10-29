@@ -321,12 +321,61 @@ export default function EAFPage() {
         createdAt: new Date().toLocaleString('fa-IR'),
         updatedAt: new Date().toLocaleString('fa-IR'),
       });
-      // Don't select the new heat - stay on "new heat" mode
-      // This allows the next heat to auto-increment refractory values
+      
       setSaveMessage(`✅ ذوب ${newHeatId} با موفقیت ثبت شد`);
       
       // Reset form for next heat with auto-incremented refractory
+      // Calculate new refractory values based on the heat we just saved
+      const newRefractory = {
+        walls: (eafData.refractoryCounters.walls || 0) + 1,
+        centerPiece: (eafData.refractoryCounters.centerPiece || 0) + 1,
+        bottom: (eafData.refractoryCounters.bottom || 0) + 1,
+        taphole: (eafData.refractoryCounters.taphole || 0) + 1,
+      };
+      
+      console.log('=== SAVED NEW HEAT ===');
+      console.log('Saved refractory:', eafData.refractoryCounters);
+      console.log('Next heat refractory will be:', newRefractory);
+      
+      // Reset form with new refractory values
       setTimeout(() => {
+        setForm({
+          date: getTodayJalali(),
+          shift: 'A',
+          steelGrade: '4402',
+          heatStartTime: '',
+          tappingStartTime: '',
+          tappingEndTime: '',
+          tappingWeight: 0,
+          carbonPercent: 0,
+          ppm: 0,
+          powerOn: 0,
+          walls: newRefractory.walls,
+          centerPiece: newRefractory.centerPiece,
+          bottom: newRefractory.bottom,
+          taphole: newRefractory.taphole,
+          sampleTime: '', sampleTemp: 0, sampleTap: 0, sampleEnCou: 0,
+          sampleDri: 0, sampleBriquet: 0, sampleDolomite: 0,
+          sampleLimeMHU: 0, sampleCarbonMHU: 0, sampleCpcMHU: 0,
+          sampleCpcInjection: 0, sampleCh4: 0, sampleOxygen: 0,
+          tappingTime: '', tappingTemp: 0, tappingTap: 0, tappingEnCou: 0,
+          tappingDri: 0, tappingBriquet: 0, tappingDolomite: 0,
+          tappingLimeMHU: 0, tappingCarbonMHU: 0, tappingCpcMHU: 0,
+          tappingCpcInjection: 0, tappingCh4: 0, tappingOxygen: 0,
+          preStoppages: Array(7).fill(null).map(() => ({ from: '', till: '', minutes: 0, workingGroup: '', reason: '', customReason: '' })),
+          duringStoppages: Array(7).fill(null).map(() => ({ from: '', till: '', minutes: 0, workingGroup: '', reason: '', customReason: '' })),
+          ladleNumber: '', slagCondition: '', wallCondition: '',
+          thermocouple: 0, sampler: 0, oxyProbe: 0, tapholeSand: 0,
+          sample1: { c: 0, si: 0, mn: 0, p: 0, s: 0 },
+          sample2: { c: 0, si: 0, mn: 0, p: 0, s: 0 },
+          sample3: { c: 0, si: 0, mn: 0, p: 0, s: 0 },
+          bucket1Number: '', bucket1Tonnage: 0,
+          bucket2Number: '', bucket2Tonnage: 0,
+          a_feMn: 0, a_feSiMn: 0, a_feSi: 0, a_lime: 0, a_graphite: 0,
+          a_caAl: 0, a_al: 0, a_cac2: 0,
+          phase1: [], phase2: [], phase3: [],
+          shiftSupervisorNotes: '',
+        });
         setSelectedHeatId('');
       }, 100);
     } else {
