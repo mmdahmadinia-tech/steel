@@ -136,12 +136,36 @@ export default function AllEAFHeatsPage() {
   const exportAllToExcel = () => {
     const rows: any[] = [];
     
-    // Header
-    rows.push(['HEAT ID', 'تاریخ', 'گرید', 'شیفت', 'شروع ذوب', 'شروع تخلیه', 'پایان تخلیه', 'مدت تخلیه', 'DRI (Ton)', 'Briquet (Ton)', 'جمع قراضه', 'TAP Sample', 'TAP Tapping', 'Power On', 'Power Off', 'Tap to Tap', 'Walls', 'Center Piece', 'Bottom', 'Taphole', 'En.Cou', 'FeMn', 'FeSiMn', 'FeSi', 'Ca.Al', 'AL', 'CaC2', 'Dolomite', 'Lime MHU', 'Lime', 'Carbon MHU', 'CPC Injection', 'CPC MHU', 'Graphite', 'CH4', 'Oxygen', 'وزن تخلیه', 'PPM', 'کربن %', 'Thermocouple', 'Sampler', 'Oxy Probe', 'Taphole Sand', 'Ladle', 'Slag', 'Wall', 'توضیحات سرشیفت']);
+    // Header - 60 ستون کامل
+    rows.push([
+      'HEAT ID', 'تاریخ', 'گرید', 'شیفت', 'شروع ذوب', 'شروع تخلیه', 'پایان تخلیه', 'مدت تخلیه',
+      'DRI (Ton)', 'Briquet (Ton)', 'جمع قراضه', 'TAP Sample', 'TAP Tapping',
+      'Power On', 'Power Off', 'Tap to Tap',
+      'Walls', 'Center Piece', 'Bottom', 'Taphole',
+      'En.Cou (MWh)', 'FeMn', 'FeSiMn', 'FeSi', 'Ca.Al', 'AL', 'CaC2',
+      'Dolomite', 'Lime MHU', 'Lime', 'Carbon MHU', 'CPC Injection', 'CPC MHU', 'Graphite',
+      'CH4', 'Oxygen', 'وزن تخلیه',
+      'آنالیز C', 'آنالیز Si', 'آنالیز Mn', 'آنالیز P', 'آنالیز S',
+      'PPM', 'کربن %',
+      'Thermocouple', 'Sampler', 'Oxy Probe', 'Taphole Sand',
+      'الکترود فاز 1 تعویض', 'الکترود فاز 2 تعویض', 'الکترود فاز 3 تعویض',
+      'شکستن فاز 1', 'شکستن فاز 2', 'شکستن فاز 3',
+      'تنظیم فاز 1', 'تنظیم فاز 2', 'تنظیم فاز 3',
+      'Ladle', 'Slag', 'Wall', 'توضیحات سرشیفت'
+    ]);
 
     filteredHeats.forEach(h => {
       const eaf = h.eafData as any;
       if (!eaf) return;
+      
+      // الکترودها
+      const phase1 = eaf.electrodeStatus?.phase1 || [];
+      const phase2 = eaf.electrodeStatus?.phase2 || [];
+      const phase3 = eaf.electrodeStatus?.phase3 || [];
+      
+      // آنالیز شیمیایی - نمونه اول
+      const analysis = eaf.chemicalAnalysis?.[0] || {};
+      
       rows.push([
         h.heatId,
         h.date,
@@ -180,12 +204,30 @@ export default function AllEAFHeatsPage() {
         eaf.tappingCh4 || 0,
         eaf.tappingOxygen || 0,
         eaf.tappingWeight || 0,
+        // آنالیز شیمیایی
+        analysis.c || 0,
+        analysis.si || 0,
+        analysis.mn || 0,
+        analysis.p || 0,
+        analysis.s || 0,
+        // بقیه
         eaf.ppm || 0,
         eaf.carbonPercent || 0,
         eaf.consumables?.thermocouple || 0,
         eaf.consumables?.sampler || 0,
         eaf.consumables?.oxyProbe || 0,
         eaf.consumables?.tapholeSand || 0,
+        // الکترودها
+        phase1.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase2.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase3.includes('Changing — تعویض') ? 'بله' : 'خیر',
+        phase1.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
+        phase2.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
+        phase3.includes('Breaking — شکستگی') ? 'بله' : 'خیر',
+        phase1.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        phase2.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        phase3.includes('Adjusting — تنظیم') ? 'بله' : 'خیر',
+        // پاتیل و توضیحات
         eaf.ladleInfo?.ladleNumber || '',
         eaf.ladleInfo?.slagCondition || '',
         eaf.ladleInfo?.wallCondition || '',
