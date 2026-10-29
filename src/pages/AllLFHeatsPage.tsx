@@ -102,27 +102,30 @@ export default function AllLFHeatsPage() {
     rows.push(['Oxy. Probe', lf.probeConsumption?.oxyProbe || 0]);
     rows.push(['']);
     
-    // داده‌های فرایندی
+    // داده‌های فرایندی - به صورت ردیفی
     if (lf.processData && lf.processData.length > 0) {
+      rows.push(['']);
       rows.push(['┌─────────────────────────────────────────────────────────┐']);
-      rows.push(['│ داده‌های فرایندی                                        │']);
+      rows.push(['│ داده‌های فرایندی (ردیفی)                               │']);
       rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['ردیف', 'Time (24h)', 'Temp (°C)', 'PPM', 'En.Cou', 'Tap', 'P.on', 'Description']);
       lf.processData.forEach((p: any, i: number) => {
-        if (p.time || p.temp || p.ppm) {
-          rows.push([`داده ${i + 1}`, `Time: ${p.time || '-'}`, `Temp: ${p.temp || 0}°C`, `PPM: ${p.ppm || 0}`, `En.Cou: ${p.enCou || 0}`, `Tap: ${p.tap || 0}`, `P.on: ${p.pOn || 0}`, `Desc: ${p.description || ''}`]);
+        if (p.time || p.temp || p.ppm || p.enCou || p.tap || p.pOn || p.description) {
+          rows.push([`ردیف ${i + 1}`, p.time || '', p.temp || 0, p.ppm || 0, p.enCou || 0, p.tap || 0, p.pOn || 0, p.description || '']);
         }
       });
       rows.push(['']);
     }
     
-    // توقفات
+    // توقفات - به صورت ردیفی
     if (lf.stoppages && lf.stoppages.length > 0) {
       rows.push(['┌─────────────────────────────────────────────────────────┐']);
-      rows.push(['│ توقفات                                                  │']);
+      rows.push(['│ توقفات (ردیفی)                                         │']);
       rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['ردیف', 'From (24h)', 'Till (24h)', 'Minute', 'Working Group', 'Description']);
       lf.stoppages.forEach((s: any, i: number) => {
         if (s.from || s.till) {
-          rows.push([`توقف ${i + 1}`, `از ${s.from} تا ${s.till}`, `${s.minutes} دقیقه`, s.workingGroup || '', s.description || '']);
+          rows.push([`ردیف ${i + 1}`, s.from || '', s.till || '', s.minutes || 0, s.workingGroup || '', s.description || '']);
         }
       });
       rows.push(['']);
@@ -148,40 +151,43 @@ export default function AllLFHeatsPage() {
     rows.push(['Transfercar Number', lf.ladleStatus?.transfercarNumber || '']);
     rows.push(['']);
     
-    // الکترودها
+    // الکترودها - به صورت ردیفی
     if (lf.electrodeStatus) {
       rows.push(['┌─────────────────────────────────────────────────────────┐']);
-      rows.push(['│ الکترودها                                              │']);
+      rows.push(['│ الکترودها (ردیفی)                                      │']);
       rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['فاز', 'وضعیت']);
       const phase1 = lf.electrodeStatus.phase1 || [];
       const phase2 = lf.electrodeStatus.phase2 || [];
       const phase3 = lf.electrodeStatus.phase3 || [];
-      rows.push(['فاز 1', phase1.join(', ') || '-']);
-      rows.push(['فاز 2', phase2.join(', ') || '-']);
-      rows.push(['فاز 3', phase3.join(', ') || '-']);
+      rows.push(['فاز 1', phase1.length > 0 ? phase1.join(', ') : '-']);
+      rows.push(['فاز 2', phase2.length > 0 ? phase2.join(', ') : '-']);
+      rows.push(['فاز 3', phase3.length > 0 ? phase3.join(', ') : '-']);
       rows.push(['']);
     }
     
-    // وضعیت دمش‌ها
+    // وضعیت دمش‌ها - به صورت ردیفی
     if (lf.stringStatus) {
       rows.push(['┌─────────────────────────────────────────────────────────┐']);
-      rows.push(['│ وضعیت دمش‌ها                                          │']);
+      rows.push(['│ وضعیت دمش‌ها (ردیفی)                                  │']);
       rows.push(['└─────────────────────────────────────────────────────────┘']);
-      rows.push(['Line 1', lf.stringStatus.line1 || '']);
-      rows.push(['Line 2', lf.stringStatus.line2 || '']);
+      rows.push(['خط', 'وضعیت']);
+      rows.push(['Line 1', lf.stringStatus.line1 || '-']);
+      rows.push(['Line 2', lf.stringStatus.line2 || '-']);
       rows.push(['']);
     }
     
-    // آنالیز شیمیایی
+    // آنالیز شیمیایی - به صورت ردیفی
     if (lf.chemicalAnalysis) {
       rows.push(['┌─────────────────────────────────────────────────────────┐']);
-      rows.push(['│ آنالیز شیمیایی                                         │']);
+      rows.push(['│ آنالیز شیمیایی (ردیفی)                                 │']);
       rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['نمونه', 'C (%)', 'Si (%)', 'Mn (%)', 'P (%)', 'S (%)', 'Al (%)']);
       const samples = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5'];
       samples.forEach((s, i) => {
         const sample = lf.chemicalAnalysis[s];
-        if (sample) {
-          rows.push([`نمونه ${i + 1}`, `C: ${sample.c || 0}`, `Si: ${sample.si || 0}`, `Mn: ${sample.mn || 0}`, `P: ${sample.p || 0}`, `S: ${sample.s || 0}`, `Al: ${sample.al || 0}`]);
+        if (sample && (sample.c || sample.si || sample.mn || sample.p || sample.s || sample.al)) {
+          rows.push([`نمونه ${i + 1}`, sample.c || 0, sample.si || 0, sample.mn || 0, sample.p || 0, sample.s || 0, sample.al || 0]);
         }
       });
       rows.push(['']);
