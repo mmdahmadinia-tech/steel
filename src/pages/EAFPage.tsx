@@ -75,17 +75,19 @@ export default function EAFPage() {
   });
 
   // Calculate refractory values based on previous heat
-  const previousRefractory = useMemo(() => {
+  const getPreviousRefractory = () => {
     const previousHeats = heats.filter(h => h.eafData).sort((a, b) => b.id.localeCompare(a.id));
     const prev = previousHeats[0];
     const prevRefractory = (prev?.eafData as any)?.refractoryCounters;
+    console.log('getPreviousRefractory - Previous heat:', prev?.heatId);
+    console.log('getPreviousRefractory - Previous refractory:', prevRefractory);
     return {
       walls: prevRefractory ? (prevRefractory.walls || 0) + 1 : 0,
       centerPiece: prevRefractory ? (prevRefractory.centerPiece || 0) + 1 : 0,
       bottom: prevRefractory ? (prevRefractory.bottom || 0) + 1 : 0,
       taphole: prevRefractory ? (prevRefractory.taphole || 0) + 1 : 0,
     };
-  }, [heats]);
+  };
 
   // Load data when heat is selected
   useEffect(() => {
@@ -165,9 +167,10 @@ export default function EAFPage() {
         });
       }
     } else {
-      // New heat - use calculated refractory values from useMemo
+      // New heat - use calculated refractory values
+      const prevRefractory = getPreviousRefractory();
       console.log('=== NEW HEAT - Using calculated refractory ===');
-      console.log('Previous refractory + 1:', previousRefractory);
+      console.log('Previous refractory + 1:', prevRefractory);
       
       setForm({
         date: getTodayJalali(),
@@ -180,10 +183,10 @@ export default function EAFPage() {
         carbonPercent: 0,
         ppm: 0,
         powerOn: 0,
-        walls: previousRefractory.walls,
-        centerPiece: previousRefractory.centerPiece,
-        bottom: previousRefractory.bottom,
-        taphole: previousRefractory.taphole,
+        walls: prevRefractory.walls,
+        centerPiece: prevRefractory.centerPiece,
+        bottom: prevRefractory.bottom,
+        taphole: prevRefractory.taphole,
         sampleTime: '', sampleTemp: 0, sampleTap: 0, sampleEnCou: 0,
         sampleDri: 0, sampleBriquet: 0, sampleDolomite: 0,
         sampleLimeMHU: 0, sampleCarbonMHU: 0, sampleCpcMHU: 0,
@@ -207,7 +210,7 @@ export default function EAFPage() {
         shiftSupervisorNotes: '',
       });
     }
-  }, [selectedHeatId, heats, previousRefractory]);
+  }, [selectedHeatId, heats]);
 
   const calculated = useMemo(() => {
     const tappingDuration = calcMinutes(form.tappingStartTime, form.tappingEndTime);
