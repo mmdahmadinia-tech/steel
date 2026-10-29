@@ -31,6 +31,7 @@ export interface EAFData {
   date: string;
   shift: string;
   steelGrade: string;
+  heatStartTime?: string;
   // Refractory
   refractoryCounters: { walls: number; centerPiece: number; bottom: number; taphole: number };
   // Times
@@ -41,26 +42,36 @@ export interface EAFData {
   tappingStartTime: string;
   tappingEndTime: string;
   tappingDuration: number;
-  enCou?: number;
   carbonPercent?: number;
   ppm: number;
-  heatStartTime?: string;
-  // Materials
-  materials: {
-    dri: number; briquet: number;
-    feMn: number; feSiMn: number; feSi: number;
-    lime: number; carbon: number;
-    cpcMHU: number; cpcInjection: number;
-    oxygen: number; ch4: number; dolomite: number;
-  };
-  // Tapping materials
-  tappingMaterials: {
-    dri: number; briquet: number;
-    feMn: number; feSiMn: number; feSi: number;
-    lime: number; carbon: number;
-    cpcMHU: number; cpcInjection: number;
-    oxygen: number; ch4: number; dolomite: number;
-  };
+  // Sample Time
+  sampleTime?: string;
+  sampleTemp?: number;
+  sampleTap?: number;
+  sampleEnCou?: number;
+  sampleDri?: number;
+  sampleBriquet?: number;
+  sampleDolomite?: number;
+  sampleLimeMHU?: number;
+  sampleCarbonMHU?: number;
+  sampleCpcMHU?: number;
+  sampleCpcInjection?: number;
+  sampleCh4?: number;
+  sampleOxygen?: number;
+  // Tapping Start
+  tappingTime?: string;
+  tappingTemp?: number;
+  tappingTap?: number;
+  tappingEnCou?: number;
+  tappingDri?: number;
+  tappingBriquet?: number;
+  tappingDolomite?: number;
+  tappingLimeMHU?: number;
+  tappingCarbonMHU?: number;
+  tappingCpcMHU?: number;
+  tappingCpcInjection?: number;
+  tappingCh4?: number;
+  tappingOxygen?: number;
   // Stoppages
   preStoppages: any[];
   duringStoppages: any[];
@@ -77,9 +88,7 @@ export interface EAFData {
   // Additives
   additives: any;
   // Recording info
-  recordingOperator?: string;
-  shiftSupervisor?: string;
-  supervisorNotes?: string;
+  shiftSupervisorNotes?: string;
 }
 
 export const STEEL_GRADES = ['4402', '3203', '3401', '3204', '3302', '4501'];
@@ -113,7 +122,7 @@ export const defaultUsers: User[] = [
   { id: '5', username: '19452', password: '19452', fullName: 'کاربر تحلیل', role: 'analyst', isActive: true, unitAccess: ['EAF', 'LF', 'CCM'] },
 ];
 
-function createSampleHeat(id: string, heatId: string, date: string, shift: string, grade: string, weight: number, enCou: number, ppm: number): Heat {
+function createSampleHeat(id: string, heatId: string, date: string, shift: string, grade: string, weight: number, _enCou: number, ppm: number): Heat {
   return {
     id, heatId, date, shift, steelGrade: grade, isSubHeat: false,
     eafStatus: 'completed', lfStatus: 'completed', ccmStatus: 'completed',
@@ -123,24 +132,19 @@ function createSampleHeat(id: string, heatId: string, date: string, shift: strin
       powerOn: 45, powerOff: 120, tapToTap: 165,
       tappingWeight: weight,
       tappingStartTime: '11:00', tappingEndTime: '11:30', tappingDuration: 30,
-      enCou, ppm,
-      materials: {
-        dri: 95, briquet: 5,
-        feMn: 280, feSiMn: 150, feSi: 120,
-        lime: 2500, carbon: 800,
-        cpcMHU: 400, cpcInjection: 300,
-        oxygen: 4500, ch4: 1500, dolomite: 1200,
-      },
-      tappingMaterials: {
-        dri: 0, briquet: 0,
-        feMn: 50, feSiMn: 30, feSi: 25,
-        lime: 500, carbon: 100,
-        cpcMHU: 80, cpcInjection: 60,
-        oxygen: 800, ch4: 200, dolomite: 200,
-      },
+      ppm,
+      sampleTime: '10:30', sampleTemp: 1600, sampleTap: 15, sampleEnCou: 42.5,
+      sampleDri: 95, sampleBriquet: 5, sampleDolomite: 1200,
+      sampleLimeMHU: 2500, sampleCarbonMHU: 800, sampleCpcMHU: 400,
+      sampleCpcInjection: 300, sampleCh4: 1500, sampleOxygen: 4500,
+      tappingTime: '11:00', tappingTemp: 1620, tappingTap: 15, tappingEnCou: 42.5,
+      tappingDri: 95, tappingBriquet: 5, tappingDolomite: 1200,
+      tappingLimeMHU: 2500, tappingCarbonMHU: 800, tappingCpcMHU: 400,
+      tappingCpcInjection: 300, tappingCh4: 1500, tappingOxygen: 4500,
       preStoppages: [], duringStoppages: [],
       chemicalAnalysis: [], consumables: {}, ladleInfo: {}, electrodeStatus: {},
-      additives: {}, scrapBuckets: [],
+      additives: { feMn: 280, feSiMn: 150, feSi: 120, lime: 2500, graphite: 400, caAl: 100, al: 50, cac2: 150 },
+      scrapBuckets: [],
     },
     lfData: {
       additives: { feMn: 120, feSiMn: 80, feSi: 60, lime: 800, graphite: 200, caC2: 150, caAl: 100 }
