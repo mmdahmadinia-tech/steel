@@ -7,12 +7,18 @@ export default function HeatDetailPage() {
   const navigate = useNavigate();
   const { heats } = useData();
   
+  console.log('HeatDetailPage - ID from URL:', id);
+  console.log('HeatDetailPage - All heats:', heats.map(h => ({ id: h.id, heatId: h.heatId })));
+  
   const heat = heats.find(h => h.id === id);
+  
+  console.log('HeatDetailPage - Found heat:', heat);
 
   if (!heat) {
     return (
       <div className="card text-center py-12">
         <p className="text-gray-500 text-lg mb-4">ذوب مورد نظر یافت نشد</p>
+        <p className="text-sm text-gray-400 mb-4">ID درخواستی: {id}</p>
         <button onClick={() => navigate('/heats')} className="btn-primary">
           بازگشت به فهرست ذوب‌ها
         </button>

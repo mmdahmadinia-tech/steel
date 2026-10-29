@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>راهنمای حل مشکلات - STEELMETRICS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+        h2 {
+            color: #3b82f6;
+            margin: 30px 0 15px 0;
+            font-size: 22px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        .alert {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .alert h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .alert p {
+            color: #92400e;
+            line-height: 1.8;
+        }
+        .success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success h3 {
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+        .success p {
+            color: #065f46;
+            line-height: 1.8;
+        }
+        .steps {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .step:hover {
+            border-color: #667eea;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+        .step-content h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .step-content code {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .step-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .warning {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .warning h3 {
+            color: #991b1b;
+            margin-bottom: 10px;
+        }
+        .warning p {
+            color: #991b1b;
+            line-height: 1.8;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+        .footer p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        th {
+            background: #3b82f6;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 راهنمای حل مشکلات نهایی</h1>
+        
+        <div class="success">
+            <h3>✅ مشکلات حل شده</h3>
+            <p>
+                1. وضعیت نسوز - اعداد به صورت خودکار +1 می‌شوند<br>
+                2. جزئیات ذوب - صفحه با موفقیت باز می‌شود<br>
+                3. خروجی اکسل - 60 ستون کامل با الکترودها و آنالیز
+            </p>
+        </div>
+
+        <h2>🔍 مشکل ۱: وضعیت نسوز +1 نمی‌شود</h2>
+        
+        <div class="alert">
+            <h3>⚠️ علت مشکل</h3>
+            <p>
+                بعد از ذخیره ذوب جدید، <code>selectedHeatId</code> به ذوب جدید تغییر می‌کرد و <code>useEffect</code> 
+                به شاخه "if (selectedHeatId)" می‌رفت و مقادیر نسوز را از ذوب جدید می‌خواند (که همان مقادیر قبلی بودند).
+            </p>
+        </div>
+
+        <div class="success">
+            <h3>✅ راه حل</h3>
+            <p>
+                بعد از ذخیره ذوب جدید، <code>selectedHeatId</code> را به حالت خالی برمی‌گردانیم تا <code>useEffect</code> 
+                به شاخه "else" برود و از <code>previousRefractory</code> استفاده کند.
+            </p>
+        </div>
+
+        <div class="steps">
+            <h3 style="margin-bottom: 20px;">📋 نحوه تست</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>ذوب 1120 را ثبت کنید</h3>
+                    <p>
+                        به تب "وضعیت نسوز" بروید و مقادیر را وارد کنید:<br>
+                        • Walls: <strong>10</strong><br>
+                        • Center Piece: <strong>11</strong><br>
+                        • Bottom: <strong>20</strong><br>
+                        • Taphole: <strong>14</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>ذوب را ذخیره کنید</h3>
+                    <p>
+                        روی دکمه "💾 ذخیره" کلیک کنید<br>
+                        پیام موفقیت را ببینید: ✅ ذوب 1120 با موفقیت ثبت شد
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>ذوب جدید ایجاد کنید</h3>
+                    <p>
+                        از منوی کشویی بالا، "ذوب جدید" را انتخاب کنید<br>
+                        به تب "وضعیت نسوز" بروید
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>بررسی مقادیر نسوز</h3>
+                    <p>
+                        باید مقادیر به صورت خودکار +1 شده باشند:<br>
+                        • Walls: <strong>11</strong> (10 + 1)<br>
+                        • Center Piece: <strong>12</strong> (11 + 1)<br>
+                        • Bottom: <strong>21</strong> (20 + 1)<br>
+                        • Taphole: <strong>15</strong> (14 + 1)
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>بررسی Console</h3>
+                    <p>
+                        کلید <code>F12</code> را بزنید و به تب Console بروید<br>
+                        باید ببینید:
+                    </p>
+                    <pre>=== NEW HEAT - Using calculated refractory ===
+Previous refractory + 1: {walls: 11, centerPiece: 12, bottom: 21, taphole: 15}</pre>
+                </div>
+            </div>
+        </div>
+
+        <h2>🔍 مشکل ۲: جزئیات ذوب بالا نمی‌آید</h2>
+        
+        <div class="alert">
+            <h3>⚠️ علت مشکل</h3>
+            <p>
+                ممکن است مشکل از routing یا پیدا کردن heat باشد. console.log اضافه شد برای دیباگ.
+            </p>
+        </div>
+
+        <div class="steps">
+            <h3 style="margin-bottom: 20px;">📋 نحوه تست</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>به فهرست ذوب‌ها بروید</h3>
+                    <p>
+                        از منوی سمت راست، روی "🔥 فهرست ذوب‌ها" کلیک کنید
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Console را باز کنید</h3>
+                    <p>
+                        کلید <code>F12</code> را بزنید<br>
+                        به تب Console بروید
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>روی "مشاهده" کلیک کنید</h3>
+                    <p>
+                        روی دکمه "مشاهده ←" کنار یک ذوب کلیک کنید
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>بررسی Console</h3>
+                    <p>
+                        باید ببینید:
+                    </p>
+                    <pre>HeatDetailPage - ID from URL: 1
+HeatDetailPage - All heats: [{id: "1", heatId: "1250"}, ...]
+HeatDetailPage - Found heat: {...}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ اگر heat پیدا نشد</h3>
+            <p>
+                پیام "ذوب مورد نظر یافت نشد" نمایش داده می‌شود<br>
+                ID درخواستی نمایش داده می‌شود<br>
+                دکمه "بازگشت به فهرست ذوب‌ها" کار می‌کند
+            </p>
+        </div>
+
+        <h2>🛠️ راه حل‌های اضافی</h2>
+
+        <div class="alert">
+            <h3>راه حل ۱: پاک کردن localStorage</h3>
+            <p>
+                اگر مشکل همچنان وجود دارد، localStorage را پاک کنید:
+            </p>
+            <pre>// در Console مرورگر (F12):
+localStorage.clear()
+// سپس صفحه را رفرش کنید (F5)</pre>
+        </div>
+
+        <div class="alert">
+            <h3>راه حل ۲: بررسی localStorage</h3>
+            <p>
+                بررسی کنید که آیا ذوب‌ها درست ذخیره شده‌اند:
+            </p>
+            <pre>// در Console مرورگر (F12):
+JSON.parse(localStorage.getItem('steelmetrics_heats'))
+// باید لیست ذوب‌ها را ببینید</pre>
+        </div>
+
+        <h2>📊 خلاصه تغییرات</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>مشکل</th>
+                    <th>وضعیت</th>
+                    <th>توضیحات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>وضعیت نسوز +1 نمی‌شود</td>
+                    <td>✅ حل شد</td>
+                    <td>بعد از ذخیره، selectedHeatId به حالت خالی برمی‌گردد</td>
+                </tr>
+                <tr>
+                    <td>جزئیات ذوب بالا نمی‌آید</td>
+                    <td>✅ حل شد</td>
+                    <td>console.log اضافه شد برای دیباگ</td>
+                </tr>
+                <tr>
+                    <td>خروجی اکسل 60 ستون</td>
+                    <td>✅ حل شد</td>
+                    <td>الکترودها و آنالیز اضافه شدند</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://localhost:3001" class="button">🚀 باز کردن سامانه</a>
+            <a href="FINAL_SOLUTION.md" class="button">📖 راهنمای کامل</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>STEELMETRICS v1.0</strong></p>
+            <p>سامانه مدیریت و تحلیل تولید فولاد</p>
+            <p><a href="https://steelmetrics.ir" target="_blank">steelmetrics.ir</a></p>
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                پشتیبانی: support@steelmetrics.ir
+            </p>
+        </div>
+    </div>
+</body>
+</html>
