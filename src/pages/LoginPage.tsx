@@ -7,8 +7,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
-  const { login, resetUsers } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -25,14 +24,6 @@ export default function LoginPage() {
       }
       setLoading(false);
     }, 300);
-  };
-
-  const handleReset = () => {
-    if (confirm('آیا مطمئن هستید؟ تمام کاربران به حالت پیش‌فرض بازنشانی می‌شوند.')) {
-      resetUsers();
-      setError('');
-      alert('کاربران بازنشانی شدند. اکنون می‌توانید با کاربران پیش‌فرض وارد شوید.');
-    }
   };
 
   return (
@@ -162,54 +153,7 @@ export default function LoginPage() {
             <p className="text-orange-300/60 text-xs">دفتر فنی و برنامه‌ریزی تولید</p>
           </div>
 
-          {/* Debug Section */}
-          <div className="mt-4 pt-4 border-t border-orange-900/20">
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className="text-xs text-orange-400/40 hover:text-orange-400/80 transition-colors"
-            >
-              {showDebug ? '▼' : '▶'} راهنمای ورود
-            </button>
-            
-            {showDebug && (
-              <div className="mt-3 text-xs text-orange-300/70 space-y-2">
-                <p className="font-bold text-orange-300">کاربران پیش‌فرض:</p>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <div className="bg-black/30 rounded p-2">
-                    <p className="text-orange-400">مدیر سایت</p>
-                    <p>کاربری: 19029</p>
-                    <p>رمز: 19029</p>
-                  </div>
-                  <div className="bg-black/30 rounded p-2">
-                    <p className="text-orange-400">کاربر EAF</p>
-                    <p>کاربری: 19377</p>
-                    <p>رمز: 19377</p>
-                  </div>
-                  <div className="bg-black/30 rounded p-2">
-                    <p className="text-orange-400">کاربر LF</p>
-                    <p>کاربری: 19513</p>
-                    <p>رمز: 19513</p>
-                  </div>
-                  <div className="bg-black/30 rounded p-2">
-                    <p className="text-orange-400">کاربر CCM</p>
-                    <p>کاربری: 19616</p>
-                    <p>رمز: 19616</p>
-                  </div>
-                  <div className="bg-black/30 rounded p-2">
-                    <p className="text-orange-400">تحلیلگر</p>
-                    <p>کاربری: 19452</p>
-                    <p>رمز: 19452</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className="mt-3 w-full bg-red-900/30 hover:bg-red-900/50 text-red-300 text-xs py-2 px-3 rounded transition-colors"
-                >
-                  🔄 بازنشانی کاربران به حالت پیش‌فرض
-                </button>
-              </div>
-            )}
-          </div>
+
         </div>
 
         {/* Bottom */}
