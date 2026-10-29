@@ -1,0 +1,385 @@
+import React, { useState } from 'react';
+import { useData } from '../contexts/DataContext';
+import { SHIFTS, STEEL_GRADES } from '../data/mockData';
+import JalaliDatePicker from '../components/JalaliDatePicker';
+
+export default function AllLFHeatsPage() {
+  const { heats } = useData();
+  const [filterDateStart, setFilterDateStart] = useState('');
+  const [filterDateEnd, setFilterDateEnd] = useState('');
+  const [filterHeatId, setFilterHeatId] = useState('');
+  const [filterShift, setFilterShift] = useState('');
+  const [filterGrade, setFilterGrade] = useState('');
+  const [selectedHeat, setSelectedHeat] = useState<any>(null);
+
+  let filteredHeats = heats.filter(h => h.lfStatus !== 'not_started' && h.lfData);
+
+  filteredHeats = filteredHeats.filter(h => {
+    const matchHeatId = !filterHeatId || h.heatId.includes(filterHeatId);
+    const matchShift = !filterShift || h.shift === filterShift;
+    const matchGrade = !filterGrade || h.steelGrade === filterGrade;
+    
+    let matchDate = true;
+    if (filterDateStart || filterDateEnd) {
+      const heatDate = h.date.replace(/\//g, '').replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+      const startDate = filterDateStart ? filterDateStart.replace(/\//g, '').replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) : '';
+      const endDate = filterDateEnd ? filterDateEnd.replace(/\//g, '').replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) : '';
+      
+      if (startDate && endDate) {
+        matchDate = heatDate >= startDate && heatDate <= endDate;
+      } else if (startDate) {
+        matchDate = heatDate >= startDate;
+      } else if (endDate) {
+        matchDate = heatDate <= endDate;
+      }
+    }
+    
+    return matchHeatId && matchShift && matchGrade && matchDate;
+  });
+
+  const exportSingleToExcel = (heat: any) => {
+    const rows: any[] = [];
+    const h = heat;
+    const lf = h.lfData as any;
+
+    // Header
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['گزارش کامل ذوب LF', h.heatId]);
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['']);
+    
+    // اطلاعات عمومی
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ اطلاعات عمومی                                          │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
+    rows.push(['شماره ذوب', h.heatId]);
+    rows.push(['تاریخ', h.date]);
+    rows.push(['شیفت', h.shift]);
+    rows.push(['گرید', h.steelGrade]);
+    rows.push(['Input Time (24h)', lf.inputCondition?.inputTime || '']);
+    rows.push(['Delivery Time to CCM (24h)', lf.deliveryTimeToCCM || '']);
+    rows.push(['Temperature (°C)', lf.inputCondition?.inputTemperature || 0]);
+    rows.push(['']);
+    
+    // مواد افزودنی
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ مواد افزودنی (جمع کل)                                   │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
+    
+    const additives = lf.additives || {};
+    const additiveTotals: any = {};
+    Object.keys(additives).forEach(key => {
+      if (Array.isArray(additives[key])) {
+        additiveTotals[key] = additives[key].reduce((sum: number, val: number) => sum + val, 0);
+      }
+    });
+    
+    rows.push(['Total FeMn (kg)', additiveTotals.feMn || 0]);
+    rows.push(['Total FeSiMn (kg)', additiveTotals.feSiMn || 0]);
+    rows.push(['Total FeSi (kg)', additiveTotals.feSi || 0]);
+    rows.push(['Total Lime (kg)', additiveTotals.lime || 0]);
+    rows.push(['Total Isoterm (kg)', additiveTotals.isoterm || 0]);
+    rows.push(['Total Graphite (CPC) (kg)', additiveTotals.graphite || 0]);
+    rows.push(['Total CaC2 (kg)', additiveTotals.caC2 || 0]);
+    rows.push(['Total Ca.Al (kg)', additiveTotals.caAl || 0]);
+    rows.push(['Total Graphite Wire (kg)', additiveTotals.graphiteWire || 0]);
+    rows.push(['Total Metallurgy Coke (kg)', additiveTotals.metallurgyCoke || 0]);
+    rows.push(['Total CaSi Wire (kg)', additiveTotals.caSiWire || 0]);
+    rows.push(['Total CaFe Wire (kg)', additiveTotals.caFeWire || 0]);
+    rows.push(['Total Boxite (kg)', additiveTotals.boxite || 0]);
+    rows.push(['Total Al Wire (kg)', additiveTotals.alWire || 0]);
+    rows.push(['Total Deoxidizer (kg)', additiveTotals.deoxidizer || 0]);
+    rows.push(['']);
+    
+    // آرگون و پروب
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ آرگون و پروب                                           │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
+    rows.push(['Time String (دقیقه)', lf.argonConsumption?.timeString || 0]);
+    rows.push(['Argon Consumption (Nm³)', lf.argonConsumption?.consumption || 0]);
+    rows.push(['Thermocouple', lf.probeConsumption?.thermocouple || 0]);
+    rows.push(['Sampler', lf.probeConsumption?.sampler || 0]);
+    rows.push(['Oxy. Probe', lf.probeConsumption?.oxyProbe || 0]);
+    rows.push(['']);
+    
+    // داده‌های فرایندی
+    if (lf.processData && lf.processData.length > 0) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ داده‌های فرایندی                                        │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      lf.processData.forEach((p: any, i: number) => {
+        if (p.time || p.temp || p.ppm) {
+          rows.push([`داده ${i + 1}`, `Time: ${p.time || '-'}`, `Temp: ${p.temp || 0}°C`, `PPM: ${p.ppm || 0}`, `En.Cou: ${p.enCou || 0}`, `Tap: ${p.tap || 0}`, `P.on: ${p.pOn || 0}`, `Desc: ${p.description || ''}`]);
+        }
+      });
+      rows.push(['']);
+    }
+    
+    // توقفات
+    if (lf.stoppages && lf.stoppages.length > 0) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ توقفات                                                  │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      lf.stoppages.forEach((s: any, i: number) => {
+        if (s.from || s.till) {
+          rows.push([`توقف ${i + 1}`, `از ${s.from} تا ${s.till}`, `${s.minutes} دقیقه`, s.workingGroup || '', s.description || '']);
+        }
+      });
+      rows.push(['']);
+    }
+    
+    // شرایط ورود
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ شرایط ورود مذاب                                        │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
+    rows.push(['PPM (O₂)', lf.inputCondition?.ppm || 0]);
+    rows.push(['Slag Thickness (mm)', lf.inputCondition?.slagThickness || 0]);
+    rows.push(['Free Board (mm)', lf.inputCondition?.freeBoard || 0]);
+    rows.push(['']);
+    
+    // اطلاعات پاتیل
+    rows.push(['┌─────────────────────────────────────────────────────────┐']);
+    rows.push(['│ اطلاعات پاتیل                                          │']);
+    rows.push(['└─────────────────────────────────────────────────────────┘']);
+    rows.push(['Ladle Number', lf.ladleStatus?.ladleNumber || '']);
+    rows.push(['Change Ladle', lf.ladleStatus?.changeLadle || '']);
+    rows.push(['Slag Line Life', lf.ladleStatus?.slagLineLife || 0]);
+    rows.push(['Ladle Life', lf.ladleStatus?.ladleLife || 0]);
+    rows.push(['Transfercar Number', lf.ladleStatus?.transfercarNumber || '']);
+    rows.push(['']);
+    
+    // الکترودها
+    if (lf.electrodeStatus) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ الکترودها                                              │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      const phase1 = lf.electrodeStatus.phase1 || [];
+      const phase2 = lf.electrodeStatus.phase2 || [];
+      const phase3 = lf.electrodeStatus.phase3 || [];
+      rows.push(['فاز 1', phase1.join(', ') || '-']);
+      rows.push(['فاز 2', phase2.join(', ') || '-']);
+      rows.push(['فاز 3', phase3.join(', ') || '-']);
+      rows.push(['']);
+    }
+    
+    // وضعیت دمش‌ها
+    if (lf.stringStatus) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ وضعیت دمش‌ها                                          │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      rows.push(['Line 1', lf.stringStatus.line1 || '']);
+      rows.push(['Line 2', lf.stringStatus.line2 || '']);
+      rows.push(['']);
+    }
+    
+    // آنالیز شیمیایی
+    if (lf.chemicalAnalysis) {
+      rows.push(['┌─────────────────────────────────────────────────────────┐']);
+      rows.push(['│ آنالیز شیمیایی                                         │']);
+      rows.push(['└─────────────────────────────────────────────────────────┘']);
+      const samples = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5'];
+      samples.forEach((s, i) => {
+        const sample = lf.chemicalAnalysis[s];
+        if (sample) {
+          rows.push([`نمونه ${i + 1}`, `C: ${sample.c || 0}`, `Si: ${sample.si || 0}`, `Mn: ${sample.mn || 0}`, `P: ${sample.p || 0}`, `S: ${sample.s || 0}`, `Al: ${sample.al || 0}`]);
+        }
+      });
+      rows.push(['']);
+    }
+    
+    rows.push(['═══════════════════════════════════════════════════════════']);
+    rows.push(['End of Report']);
+    rows.push(['═══════════════════════════════════════════════════════════']);
+
+    const csv = rows.map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `heat_${h.heatId}_lf_full_report.csv`;
+    link.click();
+  };
+
+  const exportAllToExcel = () => {
+    const rows: any[] = [];
+    
+    // Header - 40 ستون
+    rows.push([
+      'شماره ذوب', 'تاریخ', 'شیفت', 'گرید',
+      'Input Time', 'Delivery Time to CCM', 'Temperature (°C)',
+      'Total FeMn', 'Total FeSiMn', 'Total FeSi', 'Total Lime', 'Total Isoterm',
+      'Total Graphite', 'Total CaC2', 'Total Ca.Al', 'Total Graphite Wire',
+      'Total Metallurgy Coke', 'Total CaSi Wire', 'Total CaFe Wire',
+      'Total Boxite', 'Total Al Wire', 'Total Deoxidizer',
+      'Time String', 'Argon Consumption', 'Thermocouple', 'Sampler', 'Oxy. Probe',
+      'PPM', 'Slag Thickness', 'Free Board',
+      'Ladle Number', 'Change Ladle', 'Slag Line Life', 'Ladle Life', 'Transfercar Number',
+      'Line 1', 'Line 2'
+    ]);
+
+    filteredHeats.forEach(h => {
+      const lf = h.lfData as any;
+      if (!lf) return;
+      
+      const additives = lf.additives || {};
+      const additiveTotals: any = {};
+      Object.keys(additives).forEach(key => {
+        if (Array.isArray(additives[key])) {
+          additiveTotals[key] = additives[key].reduce((sum: number, val: number) => sum + val, 0);
+        }
+      });
+      
+      rows.push([
+        h.heatId,
+        h.date,
+        h.shift,
+        h.steelGrade,
+        lf.inputCondition?.inputTime || '',
+        lf.deliveryTimeToCCM || '',
+        lf.inputCondition?.inputTemperature || 0,
+        additiveTotals.feMn || 0,
+        additiveTotals.feSiMn || 0,
+        additiveTotals.feSi || 0,
+        additiveTotals.lime || 0,
+        additiveTotals.isoterm || 0,
+        additiveTotals.graphite || 0,
+        additiveTotals.caC2 || 0,
+        additiveTotals.caAl || 0,
+        additiveTotals.graphiteWire || 0,
+        additiveTotals.metallurgyCoke || 0,
+        additiveTotals.caSiWire || 0,
+        additiveTotals.caFeWire || 0,
+        additiveTotals.boxite || 0,
+        additiveTotals.alWire || 0,
+        additiveTotals.deoxidizer || 0,
+        lf.argonConsumption?.timeString || 0,
+        lf.argonConsumption?.consumption || 0,
+        lf.probeConsumption?.thermocouple || 0,
+        lf.probeConsumption?.sampler || 0,
+        lf.probeConsumption?.oxyProbe || 0,
+        lf.inputCondition?.ppm || 0,
+        lf.inputCondition?.slagThickness || 0,
+        lf.inputCondition?.freeBoard || 0,
+        lf.ladleStatus?.ladleNumber || '',
+        lf.ladleStatus?.changeLadle || '',
+        lf.ladleStatus?.slagLineLife || 0,
+        lf.ladleStatus?.ladleLife || 0,
+        lf.ladleStatus?.transfercarNumber || '',
+        lf.stringStatus?.line1 || '',
+        lf.stringStatus?.line2 || '',
+      ]);
+    });
+
+    const csv = rows.map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `all_lf_heats_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="card bg-gradient-to-l from-green-600 to-green-700 text-white">
+        <h2 className="text-2xl font-bold">📋 کلیه ذوب‌های ثبت شده کوره پاتیلی (LF)</h2>
+        <p className="text-green-100 mt-1">مشاهده و دانلود اطلاعات کامل تمام ذوب‌ها</p>
+      </div>
+
+      <div className="card">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">🔍 فیلترها</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <JalaliDatePicker label="تاریخ شروع" value={filterDateStart} onChange={setFilterDateStart} />
+          <JalaliDatePicker label="تاریخ پایان" value={filterDateEnd} onChange={setFilterDateEnd} />
+          <div>
+            <label className="label-field">Heat ID</label>
+            <input type="text" className="input-field" value={filterHeatId} onChange={e => setFilterHeatId(e.target.value)} placeholder="شماره ذوب" />
+          </div>
+          <div>
+            <label className="label-field">شیفت</label>
+            <select className="input-field" value={filterShift} onChange={e => setFilterShift(e.target.value)}>
+              <option value="">همه</option>
+              {SHIFTS.map(s => <option key={s} value={s}>شیفت {s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">گرید</label>
+            <select className="input-field" value={filterGrade} onChange={e => setFilterGrade(e.target.value)}>
+              <option value="">همه</option>
+              {STEEL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="mt-4">
+          <button onClick={exportAllToExcel} className="btn-primary">📥 دانلود اکسل همه ذوب‌ها</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <p className="text-sm text-gray-600"><span className="font-bold text-green-600">{filteredHeats.length}</span> ذوب یافت شد</p>
+      </div>
+
+      <div className="card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Heat ID</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">تاریخ</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">شیفت</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">گرید</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Input Time</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Delivery to CCM</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Temp (°C)</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">PPM</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">عملیات</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {filteredHeats.map(heat => (
+                <tr key={heat.id} className="hover:bg-green-50/50">
+                  <td className="px-4 py-3 font-bold text-green-600">{heat.heatId}</td>
+                  <td className="px-4 py-3 text-sm">{heat.date}</td>
+                  <td className="px-4 py-3"><span className="px-2 py-1 rounded-full text-xs bg-slate-100">{heat.shift}</span></td>
+                  <td className="px-4 py-3 text-sm">{heat.steelGrade}</td>
+                  <td className="px-4 py-3 text-sm">{(heat.lfData as any)?.inputCondition?.inputTime || '-'}</td>
+                  <td className="px-4 py-3 text-sm">{(heat.lfData as any)?.deliveryTimeToCCM || '-'}</td>
+                  <td className="px-4 py-3 text-sm">{(heat.lfData as any)?.inputCondition?.inputTemperature || '-'}</td>
+                  <td className="px-4 py-3 text-sm">{(heat.lfData as any)?.inputCondition?.ppm || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => setSelectedHeat(heat)} className="text-green-600 hover:text-green-800 text-sm font-medium">مشاهده</button>
+                      <button onClick={() => exportSingleToExcel(heat)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">📥</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {filteredHeats.length === 0 && (
+        <div className="card text-center py-12">
+          <p className="text-gray-500">هیچ ذوبی یافت نشد</p>
+        </div>
+      )}
+
+      {selectedHeat && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">جزئیات کامل ذوب LF {selectedHeat.heatId}</h3>
+              <button onClick={() => setSelectedHeat(null)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+            </div>
+            <div className="space-y-4">
+              <p className="text-gray-600">برای مشاهده تمام اطلاعات، فایل اکسل را دانلود کنید.</p>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => exportSingleToExcel(selectedHeat)} className="btn-primary">📥 دانلود اکسل کامل</button>
+              <button onClick={() => setSelectedHeat(null)} className="btn-secondary">بستن</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
