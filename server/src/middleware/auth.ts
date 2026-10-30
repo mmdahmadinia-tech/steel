@@ -47,7 +47,7 @@ export function requireRole(...roles: string[]) {
 
 // Middleware بررسی دسترسی به واحد
 export function requireUnitAccess(unit: string) {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
@@ -57,9 +57,28 @@ export function requireUnitAccess(unit: string) {
       return next();
     }
 
-    // بررسی دسترسی کاربر به واحد
-    // این اطلاعات باید از دیتابیس خوانده شود
-    // برای سادگی فعلاً رد می‌کنیم
-    next();
+    // بررسی دسترسی کاربر از دیتابیس
+    try {
+      const { query } = await import('../database/pool');
+      const result = await query(
+        'SELECT unit_access FROM users WHERE id = $1 AND is_active = TRUE',
+        [req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(403).json({ error: 'User not found or inactive' });
+      }
+
+      const unitAccess: string[] = result.rows[0].unit_access || [];
+      
+      if (!unitAccess.includes(unit)) {
+        return res.status(403).json({ error: `Access denied to unit: ${unit}` });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Unit access check error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   };
 }

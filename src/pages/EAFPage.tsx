@@ -27,6 +27,7 @@ export default function EAFPage() {
   const [selectedHeatId, setSelectedHeatId] = useState('');
   const [activeTab, setActiveTab] = useState('general');
   const [saveMessage, setSaveMessage] = useState('');
+  const [nextHeatId, setNextHeatId] = useState('...');
 
   const [form, setForm] = useState<any>({
     date: getTodayJalali(),
@@ -89,6 +90,11 @@ export default function EAFPage() {
       taphole: prevRefractory ? (prevRefractory.taphole || 0) + 1 : 0,
     };
   };
+
+  // Load next heat ID
+  useEffect(() => {
+    getNextHeatId().then(id => setNextHeatId(id));
+  }, [heats]);
 
   // Load data when heat is selected
   useEffect(() => {
@@ -424,7 +430,7 @@ export default function EAFPage() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <select value={selectedHeatId} onChange={e => setSelectedHeatId(e.target.value)} className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="" className="text-gray-800">ذوب جدید ({getNextHeatId()})</option>
+              <option value="" className="text-gray-800">ذوب جدید ({nextHeatId})</option>
               {heats.filter(h => !h.isSubHeat).map(h => <option key={h.id} value={h.heatId} className="text-gray-800">{h.heatId} - {h.date}</option>)}
             </select>
             <button onClick={handleSave} className="bg-white text-blue-700 font-bold px-4 py-2 rounded-lg hover:bg-blue-50 text-sm">💾 ذخیره</button>

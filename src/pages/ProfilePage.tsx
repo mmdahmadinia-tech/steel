@@ -9,21 +9,24 @@ export default function ProfilePage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
 
     if (!user) return;
-    if (currentPassword !== user.password) { setError('رمز عبور فعلی اشتباه است'); return; }
     if (newPassword.length < 4) { setError('رمز عبور جدید باید حداقل ۴ کاراکتر باشد'); return; }
     if (newPassword !== confirmPassword) { setError('رمز عبور جدید و تکرار آن مطابقت ندارند'); return; }
 
-    changePassword(newPassword);
-    setMessage('رمز عبور با موفقیت تغییر کرد');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    const success = await changePassword(currentPassword, newPassword);
+    if (success) {
+      setMessage('رمز عبور با موفقیت تغییر کرد');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } else {
+      setError('رمز عبور فعلی اشتباه است یا خطا در تغییر رمز');
+    }
   };
 
   if (!user) return null;

@@ -1,132 +1,152 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { User, defaultUsers } from '../data/mockData';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { User } from '../data/mockData';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  token: string | null;
+  loading: boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  changePassword: (newPassword: string) => void;
-  users: User[];
-  addUser: (user: User) => void;
-  updateUser: (id: string, data: Partial<User>) => void;
-  removeUser: (id: string) => void;
-  resetUsers: () => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function isValidUser(user: any): user is User {
-  return user && typeof user.username === 'string' && typeof user.password === 'string' && typeof user.role === 'string';
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(() => {
-    try {
-      const saved = localStorage.getItem('steelmetrics_users');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Check if saved users are valid (have password field)
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isValidUser)) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-    // Reset to defaults if invalid
-    localStorage.setItem('steelmetrics_users', JSON.stringify(defaultUsers));
-    return defaultUsers;
-  });
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Check for existing session on mount
   useEffect(() => {
-    // Check if current user session is still valid
-    try {
-      const savedUser = localStorage.getItem('steelmetrics_current_user');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        if (isValidUser(parsed)) {
-          // Verify user still exists and is active
-          const currentUser = users.find(u => u.username === parsed.username && u.isActive);
-          if (currentUser) {
-            setUser(currentUser);
+    const initAuth = async () => {
+      try {
+        const savedToken = localStorage.getItem('steelmetrics_token');
+        const savedUser = localStorage.getItem('steelmetrics_user');
+        
+        if (savedToken && savedUser) {
+          // Verify token is still valid
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${savedToken}`,
+            },
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+            setToken(savedToken);
+          } else {
+            // Token expired or invalid
+            localStorage.removeItem('steelmetrics_token');
+            localStorage.removeItem('steelmetrics_user');
           }
         }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        localStorage.removeItem('steelmetrics_token');
+        localStorage.removeItem('steelmetrics_user');
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      // ignore
+    };
+
+    initAuth();
+  }, []);
+
+  // Login function
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Save token and user
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('steelmetrics_token', data.token);
+      localStorage.setItem('steelmetrics_user', JSON.stringify(data.user));
+      
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const saveUsers = (newUsers: User[]) => {
-    setUsers(newUsers);
-    localStorage.setItem('steelmetrics_users', JSON.stringify(newUsers));
-  };
-
-  const login = (username: string, password: string): boolean => {
-    // Debug log
-    console.log('Login attempt:', { username, password });
-    console.log('Available users:', users.map(u => ({ username: u.username, isActive: u.isActive })));
-    
-    const foundUser = users.find(u => 
-      u.username === username && 
-      u.password === password && 
-      u.isActive
-    );
-    
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('steelmetrics_current_user', JSON.stringify(foundUser));
-      console.log('Login successful:', foundUser.username);
-      return true;
-    }
-    
-    console.log('Login failed: user not found or inactive');
-    return false;
-  };
-
-  const logout = () => {
+  // Logout function
+  const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem('steelmetrics_current_user');
-  };
+    setToken(null);
+    localStorage.removeItem('steelmetrics_token');
+    localStorage.removeItem('steelmetrics_user');
+  }, []);
 
-  const changePassword = (newPassword: string) => {
-    if (user) {
-      const updated = { ...user, password: newPassword };
-      setUser(updated);
-      localStorage.setItem('steelmetrics_current_user', JSON.stringify(updated));
-      const newUsers = users.map(u => u.id === user.id ? { ...u, password: newPassword } : u);
-      saveUsers(newUsers);
+  // Change password function
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(`${API_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Password change failed');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Change password error:', error);
+      return false;
     }
-  };
-
-  const addUser = (newUser: User) => {
-    saveUsers([...users, newUser]);
-  };
-
-  const updateUser = (id: string, data: Partial<User>) => {
-    const newUsers = users.map(u => u.id === id ? { ...u, ...data } : u);
-    saveUsers(newUsers);
-  };
-
-  const removeUser = (id: string) => {
-    saveUsers(users.filter(u => u.id !== id));
-  };
-
-  const resetUsers = () => {
-    saveUsers(defaultUsers);
-  };
+  }, [token]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, changePassword, users, addUser, updateUser, removeUser, resetUsers }}>
+    <AuthContext.Provider value={{
+      user,
+      token,
+      loading,
+      login,
+      logout,
+      isAuthenticated: !!user && !!token,
+      changePassword,
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) throw new Error('useAuth must be used within AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
   return context;
 }
