@@ -10,20 +10,23 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
-    setTimeout(() => {
-      const success = login(username.trim(), password.trim());
+    try {
+      const success = await login(username.trim(), password.trim());
       if (success) {
         navigate('/dashboard');
       } else {
         setError('نام کاربری یا رمز عبور اشتباه است');
       }
+    } catch (err) {
+      setError('خطا در اتصال به سرور');
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   };
 
   return (
