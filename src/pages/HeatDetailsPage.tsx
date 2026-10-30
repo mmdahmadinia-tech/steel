@@ -31,6 +31,140 @@ export default function HeatDetailsPage() {
     alert('تمام ذوب‌ها با موفقیت حذف شدند');
   };
 
+  const exportToPDF = () => {
+    if (!selectedHeat) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('لطفاً پاپ‌آپ را مجاز کنید');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="fa">
+      <head>
+        <meta charset="UTF-8">
+        <title>جزئیات ذوب ${selectedHeat.heatId}</title>
+        <style>
+          body { font-family: Tahoma, sans-serif; padding: 20px; direction: rtl; }
+          h1 { color: #1e40af; text-align: center; margin-bottom: 10px; }
+          h2 { color: #3b82f6; margin-top: 30px; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+          h3 { color: #059669; margin-top: 20px; }
+          .info { background: #f0f9ff; padding: 10px; border-radius: 5px; margin: 10px 0; }
+          .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+          .info-item { background: white; padding: 8px; border-radius: 3px; }
+          .info-label { font-size: 10px; color: #666; }
+          .info-value { font-size: 14px; font-weight: bold; color: #1e40af; }
+          table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+          th { background: #3b82f6; color: white; }
+          tr:nth-child(even) { background: #f9f9f9; }
+          .materials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+          .material-item { background: #f0fdf4; padding: 5px; border-radius: 3px; }
+          .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+          .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        </style>
+      </head>
+      <body>
+        <h1>گزارش کامل ذوب ${selectedHeat.heatId}</h1>
+        <p style="text-align: center; color: #666;">تاریخ گزارش: ${new Date().toLocaleDateString('fa-IR')}</p>
+        
+        <div class="info">
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">Heat ID</div><div class="info-value">${selectedHeat.heatId}</div></div>
+            <div class="info-item"><div class="info-label">تاریخ</div><div class="info-value">${selectedHeat.date}</div></div>
+            <div class="info-item"><div class="info-label">شیفت</div><div class="info-value">${selectedHeat.shift}</div></div>
+            <div class="info-item"><div class="info-label">گرید</div><div class="info-value">${selectedHeat.steelGrade}</div></div>
+          </div>
+        </div>
+
+        ${eaf ? `
+          <h2>⚡ اطلاعات کوره قوس الکتریکی (EAF)</h2>
+          <div class="info">
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">شروع ذوب</div><div class="info-value">${eaf.heatStartTime || '-'}</div></div>
+              <div class="info-item"><div class="info-label">شروع تخلیه</div><div class="info-value">${eaf.tappingStartTime || '-'}</div></div>
+              <div class="info-item"><div class="info-label">پایان تخلیه</div><div class="info-value">${eaf.tappingEndTime || '-'}</div></div>
+              <div class="info-item"><div class="info-label">مدت تخلیه</div><div class="info-value">${eaf.tappingDuration || 0} دقیقه</div></div>
+              <div class="info-item"><div class="info-label">Power On</div><div class="info-value">${eaf.powerOn || 0} دقیقه</div></div>
+              <div class="info-item"><div class="info-label">Power Off</div><div class="info-value">${eaf.powerOff || 0} دقیقه</div></div>
+              <div class="info-item"><div class="info-label">Tap to Tap</div><div class="info-value">${eaf.tapToTap || 0} دقیقه</div></div>
+              <div class="info-item"><div class="info-label">وزن تخلیه</div><div class="info-value">${eaf.tappingWeight || 0} تن</div></div>
+              <div class="info-item"><div class="info-label">درصد کربن</div><div class="info-value">${eaf.carbonPercent || 0}%</div></div>
+              <div class="info-item"><div class="info-label">PPM</div><div class="info-value">${eaf.ppm || 0}</div></div>
+            </div>
+          </div>
+
+          ${eaf.refractoryCounters ? `
+            <h3>وضعیت نسوز</h3>
+            <table>
+              <tr><th>Walls</th><th>Center Piece</th><th>Bottom</th><th>Taphole</th></tr>
+              <tr><td>${eaf.refractoryCounters.walls || 0}</td><td>${eaf.refractoryCounters.centerPiece || 0}</td><td>${eaf.refractoryCounters.bottom || 0}</td><td>${eaf.refractoryCounters.taphole || 0}</td></tr>
+            </table>
+          ` : ''}
+
+          ${eaf.chemicalAnalysis && eaf.chemicalAnalysis.length > 0 ? `
+            <h3>آنالیز شیمیایی</h3>
+            <table>
+              <tr><th>نمونه</th><th>C%</th><th>Si%</th><th>Mn%</th><th>P%</th><th>S%</th></tr>
+              ${eaf.chemicalAnalysis.map((sample: any, i: number) => `
+                <tr><td>نمونه ${i + 1}</td><td>${sample.c || 0}</td><td>${sample.si || 0}</td><td>${sample.mn || 0}</td><td>${sample.p || 0}</td><td>${sample.s || 0}</td></tr>
+              `).join('')}
+            </table>
+          ` : ''}
+        ` : ''}
+
+        ${lf ? `
+          <h2>🔧 اطلاعات کوره پاتیلی (LF)</h2>
+          <div class="info">
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">Input Time</div><div class="info-value">${lf.inputCondition?.inputTime || '-'}</div></div>
+              <div class="info-item"><div class="info-label">Temperature</div><div class="info-value">${lf.inputCondition?.inputTemperature || 0}°C</div></div>
+              <div class="info-item"><div class="info-label">PPM (O₂)</div><div class="info-value">${lf.inputCondition?.ppm || 0}</div></div>
+              <div class="info-item"><div class="info-label">Delivery to CCM</div><div class="info-value">${lf.deliveryTimeToCCM || '-'}</div></div>
+            </div>
+          </div>
+
+          ${lf.chemicalAnalysis ? `
+            <h3>آنالیز شیمیایی</h3>
+            <table>
+              <tr><th>نمونه</th><th>C%</th><th>Si%</th><th>Mn%</th><th>P%</th><th>S%</th><th>Al%</th></tr>
+              ${['sample1', 'sample2', 'sample3', 'sample4', 'sample5'].map((s, i) => {
+                const sample = lf.chemicalAnalysis[s];
+                if (sample && (sample.c || sample.si || sample.mn)) {
+                  return `<tr><td>نمونه ${i + 1}</td><td>${sample.c || 0}</td><td>${sample.si || 0}</td><td>${sample.mn || 0}</td><td>${sample.p || 0}</td><td>${sample.s || 0}</td><td>${sample.al || 0}</td></tr>`;
+                }
+                return '';
+              }).join('')}
+            </table>
+          ` : ''}
+        ` : ''}
+
+        ${ccm ? `
+          <h2>🏭 اطلاعات ریخته‌گری مداوم (CCM)</h2>
+          <div class="info">
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">سرعت ریخته‌گری</div><div class="info-value">${ccm.avgCastingSpeed || 0} m/min</div></div>
+              <div class="info-item"><div class="info-label">پارگی خطوط</div><div class="info-value">${ccm.lineBreaks || 0}</div></div>
+              <div class="info-item"><div class="info-label">ذوب در سکوئنس</div><div class="info-value">${ccm.sequenceHeats || 0}</div></div>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="margin-top: 50px; text-align: center; color: #999; font-size: 12px;">
+          <p>گزارش تولید شده توسط سامانه STEELMETRICS</p>
+          <p>steelmetrics.ir</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
   return (
     <div className="space-y-6">
       <div className="card bg-gradient-to-l from-indigo-600 to-indigo-700 text-white">
@@ -63,16 +197,26 @@ export default function HeatDetailsPage() {
           ))}
         </select>
         
-        {selectedHeat && user?.role === 'admin' && (
+        {selectedHeat && (
           <div className="flex items-center gap-3 mt-4">
-            <Link to={`/eaf?edit=${selectedHeatId}`} className="btn-primary text-sm">
-              ✏️ ویرایش ذوب
-            </Link>
+            {user?.role === 'admin' && (
+              <>
+                <Link to={`/eaf?edit=${selectedHeatId}`} className="btn-primary text-sm">
+                  ✏️ ویرایش ذوب
+                </Link>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="btn-danger text-sm"
+                >
+                  🗑️ حذف ذوب
+                </button>
+              </>
+            )}
             <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="btn-danger text-sm"
+              onClick={exportToPDF}
+              className="btn-secondary text-sm"
             >
-              🗑️ حذف ذوب
+              📄 دانلود PDF
             </button>
           </div>
         )}
