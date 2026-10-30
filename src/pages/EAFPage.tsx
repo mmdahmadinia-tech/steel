@@ -32,6 +32,7 @@ export default function EAFPage() {
     date: getTodayJalali(),
     shift: 'A',
     steelGrade: '4402',
+    customHeatId: '', // فیلد جدید برای Heat ID دستی
     heatStartTime: '',
     tappingStartTime: '',
     tappingEndTime: '',
@@ -305,7 +306,18 @@ export default function EAFPage() {
     };
 
     if (!selectedHeatId) {
-      const newHeatId = getNextHeatId();
+      // اگر کاربر Heat ID دستی وارد کرده، از آن استفاده کن
+      // در غیر این صورت، شماره بعدی را پیشنهاد بده
+      const newHeatId = form.customHeatId.trim() || getNextHeatId();
+      
+      // بررسی تکراری نبودن Heat ID
+      const existingHeat = heats.find(h => h.heatId === newHeatId);
+      if (existingHeat) {
+        setSaveMessage(`❌ Heat ID ${newHeatId} قبلاً ثبت شده است. لطفاً شماره دیگری وارد کنید.`);
+        setTimeout(() => setSaveMessage(''), 5000);
+        return;
+      }
+      
       addHeat({
         id: Date.now().toString(),
         heatId: newHeatId,
@@ -459,7 +471,19 @@ export default function EAFPage() {
               </div>
               <div>
                 <label className="label-field">Heat ID</label>
-                <input type="text" className="input-field bg-gray-100" value={selectedHeatId || getNextHeatId()} disabled />
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={selectedHeatId || form.customHeatId || ''} 
+                  onChange={e => setForm({...form, customHeatId: e.target.value})}
+                  placeholder={selectedHeatId ? '' : `خالی بگذارید برای شماره خودکار (${getNextHeatId()})`}
+                  disabled={!!selectedHeatId}
+                />
+                {!selectedHeatId && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 می‌توانید شماره ذوب را خودتان وارد کنید یا خالی بگذارید تا سیستم به صورت خودکار شماره بعدی را پیشنهاد دهد
+                  </p>
+                )}
               </div>
               <div>
                 <label className="label-field">گرید فولاد</label>
