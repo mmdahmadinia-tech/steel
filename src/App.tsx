@@ -12,6 +12,7 @@ import HeatDetailPage from './pages/HeatDetailPage';
 import HeatDetailsPage from './pages/HeatDetailsPage';
 import AllEAFHeatsPage from './pages/AllEAFHeatsPage';
 import AllLFHeatsPage from './pages/AllLFHeatsPage';
+import AllCCMHeatsPage from './pages/AllCCMHeatsPage';
 import EAFPage from './pages/EAFPage';
 import LFPage from './pages/LFPage';
 import CCMPage from './pages/CCMPage';
@@ -41,6 +42,7 @@ function AppRoutes() {
       <Route path="/send-message" element={<ProtectedRoute><SendMessagePage /></ProtectedRoute>} />
       <Route path="/all-eaf-heats" element={<ProtectedRoute><AllEAFHeatsPage /></ProtectedRoute>} />
       <Route path="/all-lf-heats" element={<ProtectedRoute><AllLFHeatsPage /></ProtectedRoute>} />
+      <Route path="/all-ccm-heats" element={<ProtectedRoute><AllCCMHeatsPage /></ProtectedRoute>} />
       <Route path="/eaf" element={<ProtectedRoute><EAFPage /></ProtectedRoute>} />
       <Route path="/lf" element={<ProtectedRoute><LFPage /></ProtectedRoute>} />
       <Route path="/ccm" element={<ProtectedRoute><CCMPage /></ProtectedRoute>} />
