@@ -410,6 +410,11 @@ export default function CCMPage() {
                 <label className="label-field">Avg Casting Speed (m/min)</label>
                 <input type="text" className="input-field bg-gray-100" value={avgCastingSpeed} disabled placeholder="محاسبه خودکار" />
               </div>
+              <TimeInput24h label="Casting Start Time (24h)" value={form.castingStartTime} onChange={(val) => setForm({...form, castingStartTime: val})} />
+              <div>
+                <label className="label-field">Heat Number in Sequence</label>
+                <input type="number" className="input-field" value={form.heatNumberInSequence} onChange={e => setForm({...form, heatNumberInSequence: Number(e.target.value)})} />
+              </div>
               <div className="md:col-span-2 lg:col-span-4">
                 <label className="label-field">Sequence Cut Reason</label>
                 <input type="text" className="input-field" value={form.sequenceCutReason} onChange={e => setForm({...form, sequenceCutReason: e.target.value})} placeholder="علت قطع توالی" />
@@ -486,9 +491,7 @@ export default function CCMPage() {
           {activeTab === 'times' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TimeInput24h label="Next Heat Request Time" value={form.nextHeatRequestTime} onChange={(val) => setForm({...form, nextHeatRequestTime: val})} />
-              <TimeInput24h label="Casting Start Time" value={form.castingStartTime} onChange={(val) => setForm({...form, castingStartTime: val})} />
               <TimeInput24h label="Casting End Time" value={form.castingEndTime} onChange={(val) => setForm({...form, castingEndTime: val})} />
-              <div><label className="label-field">Heat Number in Sequence</label><input type="number" className="input-field" value={form.heatNumberInSequence} onChange={e => setForm({...form, heatNumberInSequence: Number(e.target.value)})} /></div>
             </div>
           )}
 
