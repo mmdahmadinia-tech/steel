@@ -43,7 +43,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const getNextHeatId = (): string => {
     const nums = heats.map(h => parseInt(h.heatId)).filter(n => !isNaN(n));
-    const max = nums.length > 0 ? Math.max(...nums) : 1249;
+    const max = nums.length > 0 ? Math.max(...nums) : 0;
     return String(max + 1);
   };
 
