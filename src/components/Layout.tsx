@@ -53,8 +53,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-gradient-to-b from-slate-800 to-slate-900 text-white transition-all duration-300 flex flex-col shadow-xl`}>
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Overlay برای موبایل */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <aside className={`${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-16'} fixed lg:relative z-50 lg:z-auto h-full bg-gradient-to-b from-slate-800 to-slate-900 text-white transition-all duration-300 flex flex-col shadow-xl`}>
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center font-bold text-lg shadow-lg">SM</div>
@@ -81,35 +89,38 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </aside>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-4">
+      <div className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
+        <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <div>
-              <h2 className="text-lg font-bold text-gray-800">{filteredMenuItems.find(i => i.path === location.pathname)?.label || 'داشبورد'}</h2>
-              <p className="text-xs text-gray-500">STEELMETRICS — steelmetrics.ir</p>
+              <h2 className="text-sm sm:text-lg font-bold text-gray-800 truncate max-w-[150px] sm:max-w-none">{filteredMenuItems.find(i => i.path === location.pathname)?.label || 'داشبورد'}</h2>
+              <p className="text-xs text-gray-500 hidden sm:block">STEELMETRICS — steelmetrics.ir</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-left">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="text-left hidden md:block">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-blue-600">{currentDate}</span>
-                <span className="text-sm text-gray-600">{currentTime}</span>
+                <span className="text-xs sm:text-sm font-bold text-blue-600">{currentDate}</span>
+                <span className="text-xs sm:text-sm text-gray-600">{currentTime}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <NotificationBell />
               <ThemeToggle />
-              <div className="flex items-center gap-2 border-r border-gray-200 pr-2">
-                <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+              <div className="hidden sm:flex items-center gap-2 border-r border-gray-200 pr-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
                 <span className="text-xs text-gray-600">آنلاین</span>
               </div>
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
       </div>
     </div>
   );
