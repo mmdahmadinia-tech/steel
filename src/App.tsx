@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SetupPage from './pages/SetupPage';
+import ForcePasswordChange from './pages/ForcePasswordChange';
 import DashboardPage from './pages/DashboardPage';
 import HeatsListPage from './pages/HeatsListPage';
 import HeatDetailPage from './pages/HeatDetailPage';
@@ -25,8 +26,9 @@ import ProfilePage from './pages/ProfilePage';
 import SendMessagePage from './pages/SendMessagePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, mustChangePassword } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (mustChangePassword) return <Navigate to="/force-password-change" replace />;
   return <Layout>{children}</Layout>;
 }
 
@@ -37,6 +39,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/force-password-change" element={
+        isAuthenticated ? <ForcePasswordChange /> : <Navigate to="/login" replace />
+      } />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />
       <Route path="/heats/:id" element={<ProtectedRoute><HeatDetailPage /></ProtectedRoute>} />

@@ -10,19 +10,6 @@ export async function login(req: Request, res: Response) {
   try {
     const { username, password } = req.body;
 
-    // بررسی وضعیت Setup
-    const setupCheck = await query(
-      'SELECT is_active FROM users WHERE username = $1',
-      ['admin']
-    );
-
-    // اگر Admin وجود دارد ولی فعال نیست، سیستم نیاز به Setup دارد
-    if (setupCheck.rows.length > 0 && !setupCheck.rows[0].is_active) {
-      return res.status(403).json({ 
-        error: 'System requires initial setup. Please contact administrator.' 
-      });
-    }
-
     // پیدا کردن کاربر
     const result = await query(
       'SELECT * FROM users WHERE username = $1 AND is_active = TRUE',
@@ -30,7 +17,7 @@ export async function login(req: Request, res: Response) {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
 
     const user = result.rows[0];
@@ -38,7 +25,7 @@ export async function login(req: Request, res: Response) {
     // بررسی رمز عبور
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
 
     // ایجاد JWT token
@@ -48,6 +35,7 @@ export async function login(req: Request, res: Response) {
         username: user.username,
         role: user.role,
         fullName: user.full_name,
+        mustChangePassword: user.must_change_password,
       },
       config.jwt.secret,
       { expiresIn: config.jwt.expiresIn }
@@ -62,6 +50,7 @@ export async function login(req: Request, res: Response) {
 
     res.json({
       token,
+      mustChangePassword: user.must_change_password,
       user: {
         id: user.id,
         username: user.username,
@@ -84,7 +73,7 @@ export async function changePassword(req: AuthRequest, res: Response) {
 
     // اعتبارسنجی رمز جدید
     if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+      return res.status(400).json({ error: 'رمز عبور جدید باید حداقل ۸ کاراکتر باشد' });
     }
 
     // دریافت کاربر
@@ -94,16 +83,18 @@ export async function changePassword(req: AuthRequest, res: Response) {
     // بررسی رمز فعلی
     const isValid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isValid) {
-      return res.status(400).json({ error: 'Current password is incorrect' });
+      return res.status(400).json({ error: 'رمز عبور فعلی اشتباه است' });
     }
 
     // رمزگذاری رمز جدید با bcrypt
     const salt = await bcrypt.genSalt(12);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
-    // به‌روزرسانی رمز
+    // به‌روزرسانی رمز و تنظیم must_change_password به false
     await query(
-      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      `UPDATE users 
+       SET password_hash = $1, must_change_password = FALSE, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2`,
       [newPasswordHash, userId]
     );
 
@@ -114,7 +105,7 @@ export async function changePassword(req: AuthRequest, res: Response) {
       [userId, req.user!.fullName]
     );
 
-    res.json({ message: 'Password changed successfully' });
+    res.json({ message: 'رمز عبور با موفقیت تغییر کرد' });
   } catch (error) {
     console.error('Change password error:', error);
     res.status(500).json({ error: 'Internal server error' });

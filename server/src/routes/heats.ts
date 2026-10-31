@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import { validate } from '../middleware/validate';
-import { authenticateToken, requireRole, requireUnitAccess } from '../middleware/auth';
+import { authenticateToken, requireRole, requireUnitAccess, requirePasswordChanged } from '../middleware/auth';
 import * as heatsController from '../controllers/heatsController';
 
 const router = Router();
@@ -10,6 +10,7 @@ const router = Router();
 router.get(
   '/',
   authenticateToken,
+  requirePasswordChanged,
   heatsController.getHeats
 );
 
@@ -17,6 +18,7 @@ router.get(
 router.get(
   '/next-id',
   authenticateToken,
+  requirePasswordChanged,
   heatsController.getNextHeatId
 );
 
@@ -24,6 +26,7 @@ router.get(
 router.get(
   '/:id',
   authenticateToken,
+  requirePasswordChanged,
   validate([
     param('id').isNumeric().withMessage('ID must be a number'),
   ]),
@@ -34,6 +37,7 @@ router.get(
 router.post(
   '/',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin', 'eaf_user'),
   validate([
     body('heatId').notEmpty().withMessage('Heat ID is required'),
@@ -48,6 +52,7 @@ router.post(
 router.put(
   '/:id',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin', 'eaf_user', 'lf_user', 'ccm_user'),
   validate([
     param('id').isNumeric().withMessage('ID must be a number'),
@@ -59,6 +64,7 @@ router.put(
 router.delete(
   '/:id',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin'),
   validate([
     param('id').isNumeric().withMessage('ID must be a number'),
@@ -70,6 +76,7 @@ router.delete(
 router.delete(
   '/',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin'),
   heatsController.deleteAllHeats
 );
@@ -78,6 +85,7 @@ router.delete(
 router.post(
   '/:heatId/eaf',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin', 'eaf_user'),
   requireUnitAccess('EAF'),
   validate([
@@ -90,6 +98,7 @@ router.post(
 router.post(
   '/:heatId/lf',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin', 'lf_user'),
   requireUnitAccess('LF'),
   validate([
@@ -102,6 +111,7 @@ router.post(
 router.post(
   '/:heatId/ccm',
   authenticateToken,
+  requirePasswordChanged,
   requireRole('admin', 'ccm_user'),
   requireUnitAccess('CCM'),
   validate([

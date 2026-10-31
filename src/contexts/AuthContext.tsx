@@ -6,10 +6,12 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
+  mustChangePassword: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  setMustChangePassword: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   // بررسی session در ابتدا
   useEffect(() => {
@@ -41,6 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData = await response.json();
             setUser(userData);
             setToken(savedToken);
+            
+            // بررسی نیاز به تغییر رمز
+            const mustChange = localStorage.getItem('steelmetrics_must_change_password');
+            setMustChangePassword(mustChange === 'true');
           } else {
             // Token نامعتبر
             localStorage.removeItem('steelmetrics_token');
@@ -84,8 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ذخیره token و user
       setToken(data.token);
       setUser(data.user);
+      setMustChangePassword(data.mustChangePassword || false);
       localStorage.setItem('steelmetrics_token', data.token);
       localStorage.setItem('steelmetrics_user', JSON.stringify(data.user));
+      localStorage.setItem('steelmetrics_must_change_password', String(data.mustChangePassword || false));
       
       return true;
     } catch (err) {
@@ -102,8 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setMustChangePassword(false);
     localStorage.removeItem('steelmetrics_token');
     localStorage.removeItem('steelmetrics_user');
+    localStorage.removeItem('steelmetrics_must_change_password');
   }, []);
 
   // Change password function
@@ -127,6 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.error || 'خطا در تغییر رمز عبور');
       }
 
+      // تغییر mustChangePassword به false
+      setMustChangePassword(false);
+      localStorage.setItem('steelmetrics_must_change_password', 'false');
+      
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در تغییر رمز عبور';
@@ -142,10 +157,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token,
       loading,
       error,
+      mustChangePassword,
       login,
       logout,
       isAuthenticated: !!user && !!token,
       changePassword,
+      setMustChangePassword,
     }}>
       {children}
     </AuthContext.Provider>
