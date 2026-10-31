@@ -11,7 +11,8 @@
     "migrate:setup": "ts-node src/database/migrateSetup.ts",
     "migrate:password": "ts-node src/database/migratePasswordChange.ts",
     "seed": "ts-node src/database/seed.ts",
-    "test": "jest"
+    "test": "jest",
+    "test-db": "ts-node src/database/testConnection.ts"
   },
   "keywords": ["steel", "production", "management", "api"],
   "author": "STEELMETRICS Team",

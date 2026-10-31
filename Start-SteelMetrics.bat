@@ -40,13 +40,40 @@ echo.
 REM Check PostgreSQL
 where psql >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [WARNING] PostgreSQL command line tools not found in PATH
-    echo [INFO] Please ensure PostgreSQL is installed and running
+    echo [ERROR] PostgreSQL command line tools not found in PATH!
     echo.
+    echo Please install PostgreSQL from: https://www.postgresql.org/download/windows/
+    echo.
+    echo After installation:
+    echo 1. Set a password for 'postgres' user
+    echo 2. Create database: psql -U postgres -c "CREATE DATABASE steelmetrics;"
+    echo 3. Edit server/.env with your PostgreSQL credentials
+    echo.
+    pause
+    exit /b 1
 ) else (
     echo [OK] PostgreSQL tools found
     echo.
 )
+
+REM Check if PostgreSQL is running
+echo [INFO] Checking PostgreSQL service...
+sc query postgresql-x64-16 | find "RUNNING" >nul
+if %errorlevel% neq 0 (
+    echo [WARNING] PostgreSQL service is not running
+    echo [INFO] Attempting to start PostgreSQL...
+    net start postgresql-x64-16
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to start PostgreSQL service
+        echo [INFO] Please start PostgreSQL manually from Windows Services
+        pause
+        exit /b 1
+    )
+    echo [OK] PostgreSQL started
+) else (
+    echo [OK] PostgreSQL is running
+)
+echo.
 
 REM Check if server dependencies are installed
 if not exist "server\node_modules\" (
@@ -98,6 +125,26 @@ if not exist ".env" (
         exit /b 1
     )
 )
+
+REM Test database connection
+echo [INFO] Testing database connection...
+call npm run test-db
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] Database connection failed!
+    echo.
+    echo Please check:
+    echo 1. PostgreSQL is installed and running
+    echo 2. Database 'steelmetrics' exists
+    echo 3. Credentials in .env are correct
+    echo.
+    echo See POSTGRESQL_SETUP_GUIDE.md for detailed instructions
+    echo.
+    cd ..
+    pause
+    exit /b 1
+)
+echo.
 
 REM Run migrations
 echo [INFO] Running database migrations...
