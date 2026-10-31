@@ -6,6 +6,7 @@ interface DataContextType {
   heats: Heat[];
   loading: boolean;
   error: string | null;
+  backendError: string | null;
   addHeat: (heat: Heat) => Promise<void>;
   updateHeat: (id: string, data: Partial<Heat>) => Promise<void>;
   deleteHeat: (id: string) => Promise<void>;
@@ -23,6 +24,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [heats, setHeats] = useState<Heat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   // Helper function for API calls
   const apiCall = useCallback(async (endpoint: string, options: RequestInit = {}) => {
@@ -30,21 +32,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
       throw new Error('لطفاً ابتدا وارد شوید');
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers,
-      },
-    });
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        
+        // بررسی خطاهای خاص
+        if (response.status === 403 && errorData.mustChangePassword) {
+          throw new Error('NEED_PASSWORD_CHANGE');
+        }
+        
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      return response.json();
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setBackendError('خطا در اتصال به Backend. لطفاً مطمئن شوید Backend در حال اجرا است.');
+        throw new Error('Backend not available');
+      }
+      throw err;
     }
-
-    return response.json();
   }, [token]);
 
   // Fetch all heats
@@ -52,11 +68,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      setBackendError(null);
+      
       const data = await apiCall('/heats');
       setHeats(data.data || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در دریافت اطلاعات ذوب‌ها';
-      setError(errorMessage);
+      
+      if (errorMessage === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      } else if (errorMessage === 'NEED_PASSWORD_CHANGE') {
+        // این خطا در AuthContext مدیریت می‌شود
+      } else {
+        setError(errorMessage);
+      }
+      
       console.error('Fetch heats error:', err);
     } finally {
       setLoading(false);
@@ -76,6 +102,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addHeat = async (heat: Heat) => {
     try {
       setError(null);
+      setBackendError(null);
       
       // Check for duplicate Heat ID
       if (heats.some(h => h.heatId === heat.heatId)) {
@@ -118,7 +145,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       await fetchHeats();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در ثبت ذوب';
-      setError(errorMessage);
+      
+      if (errorMessage === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw err;
     }
   };
@@ -127,6 +160,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateHeat = async (id: string, data: Partial<Heat>) => {
     try {
       setError(null);
+      setBackendError(null);
       
       await apiCall(`/heats/${id}`, {
         method: 'PUT',
@@ -173,7 +207,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       await fetchHeats();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در به‌روزرسانی ذوب';
-      setError(errorMessage);
+      
+      if (errorMessage === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw err;
     }
   };
@@ -182,13 +222,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteHeat = async (id: string) => {
     try {
       setError(null);
+      setBackendError(null);
+      
       await apiCall(`/heats/${id}`, {
         method: 'DELETE',
       });
       await fetchHeats();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در حذف ذوب';
-      setError(errorMessage);
+      
+      if (errorMessage === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw err;
     }
   };
@@ -197,13 +245,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteAllHeats = async () => {
     try {
       setError(null);
+      setBackendError(null);
+      
       await apiCall('/heats', {
         method: 'DELETE',
       });
       await fetchHeats();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'خطا در حذف همه ذوب‌ها';
-      setError(errorMessage);
+      
+      if (errorMessage === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw err;
     }
   };
@@ -214,6 +270,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const data = await apiCall('/heats/next-id');
       return data.nextHeatId;
     } catch (err) {
+      if (err instanceof Error && err.message === 'Backend not available') {
+        setBackendError('❌ Backend در دسترس نیست. لطفاً Start-SteelMetrics.bat را اجرا کنید.');
+      }
       throw new Error('خطا در دریافت شماره ذوب بعدی');
     }
   };
@@ -228,6 +287,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       heats,
       loading,
       error,
+      backendError,
       addHeat,
       updateHeat,
       deleteHeat,
