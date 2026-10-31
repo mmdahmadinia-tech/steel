@@ -6,6 +6,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
+import SetupPage from './pages/SetupPage';
 import DashboardPage from './pages/DashboardPage';
 import HeatsListPage from './pages/HeatsListPage';
 import HeatDetailPage from './pages/HeatDetailPage';
@@ -34,6 +35,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/setup" element={<SetupPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/heats" element={<ProtectedRoute><HeatsListPage /></ProtectedRoute>} />

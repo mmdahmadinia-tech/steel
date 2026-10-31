@@ -11,6 +11,7 @@ import authRoutes from './routes/auth';
 import heatsRoutes from './routes/heats';
 import usersRoutes from './routes/users';
 import notificationsRoutes from './routes/notifications';
+import setupRoutes from './routes/setup';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/heats', heatsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/setup', setupRoutes);
 
 // 404 handler
 app.use((req, res) => {
