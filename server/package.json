@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "migrate": "ts-node src/database/migrate.ts",
     "migrate:setup": "ts-node src/database/migrateSetup.ts",
+    "migrate:password": "ts-node src/database/migratePasswordChange.ts",
     "seed": "ts-node src/database/seed.ts",
     "test": "jest"
   },

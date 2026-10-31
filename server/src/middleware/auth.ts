@@ -9,6 +9,7 @@ export interface AuthRequest extends Request {
     username: string;
     role: string;
     fullName: string;
+    mustChangePassword?: boolean;
   };
 }
 
@@ -23,7 +24,13 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret) as any;
-    req.user = decoded;
+    req.user = {
+      id: decoded.id,
+      username: decoded.username,
+      role: decoded.role,
+      fullName: decoded.fullName,
+      mustChangePassword: decoded.mustChangePassword || false,
+    };
     next();
   } catch (error) {
     return res.status(403).json({ error: 'Invalid or expired token' });
@@ -81,4 +88,21 @@ export function requireUnitAccess(unit: string) {
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+}
+
+// Middleware بررسی نیاز به تغییر رمز عبور
+export async function requirePasswordChanged(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  // اگر کاربر نیاز به تغییر رمز دارد، دسترسی مسدود شود
+  if (req.user.mustChangePassword) {
+    return res.status(403).json({ 
+      error: 'Password change required',
+      mustChangePassword: true 
+    });
+  }
+
+  next();
 }

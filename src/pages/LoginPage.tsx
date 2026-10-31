@@ -18,7 +18,13 @@ export default function LoginPage() {
     try {
       const success = await login(username.trim(), password.trim());
       if (success) {
-        navigate('/dashboard');
+        // بررسی نیاز به تغییر رمز
+        const mustChange = localStorage.getItem('steelmetrics_must_change_password');
+        if (mustChange === 'true') {
+          navigate('/force-password-change');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         setError(authError || 'نام کاربری یا رمز عبور اشتباه است');
       }
