@@ -114,13 +114,8 @@ export const PRE_START_STOP_REASONS = [
 
 export const LADLE_NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-export const defaultUsers: User[] = [
-  { id: '1', username: '19029', password: '19029', fullName: 'مدیر سایت', role: 'admin', isActive: true, unitAccess: ['EAF', 'LF', 'CCM'] },
-  { id: '2', username: '19377', password: '19377', fullName: 'کاربر EAF', role: 'eaf_user', isActive: true, unitAccess: ['EAF'] },
-  { id: '3', username: '19513', password: '19513', fullName: 'کاربر LF', role: 'lf_user', isActive: true, unitAccess: ['LF'] },
-  { id: '4', username: '19616', password: '19616', fullName: 'کاربر CCM', role: 'ccm_user', isActive: true, unitAccess: ['CCM'] },
-  { id: '5', username: '19452', password: '19452', fullName: 'کاربر تحلیل', role: 'analyst', isActive: true, unitAccess: ['EAF', 'LF', 'CCM'] },
-];
+// کاربران پیش‌فرض حذف شدند - فقط از Backend API دریافت می‌شوند
+export const defaultUsers: User[] = [];
 
 function createSampleHeat(id: string, heatId: string, date: string, shift: string, grade: string, weight: number, _enCou: number, ppm: number): Heat {
   return {

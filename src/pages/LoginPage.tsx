@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, error: authError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,10 +20,10 @@ export default function LoginPage() {
       if (success) {
         navigate('/dashboard');
       } else {
-        setError('نام کاربری یا رمز عبور اشتباه است');
+        setError(authError || 'نام کاربری یا رمز عبور اشتباه است');
       }
     } catch (err) {
-      setError('خطا در اتصال به سرور');
+      setError('خطا در اتصال به سرور. لطفاً Backend را راه‌اندازی کنید.');
     } finally {
       setLoading(false);
     }
@@ -131,10 +131,10 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && (
+            {(error || authError) && (
               <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
                 <span>⚠️</span>
-                <span>{error}</span>
+                <span>{error || authError}</span>
               </div>
             )}
 
@@ -151,12 +151,16 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 pt-4 border-t border-orange-900/30 text-center">
-            <p className="text-orange-300/60 text-xs">دفتر فنی و برنامه‌ریزی تولید</p>
+          {/* Backend Status */}
+          <div className="mt-6 pt-4 border-t border-orange-900/30">
+            <div className="flex items-center justify-center gap-2 text-xs">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+              <span className="text-orange-300/60">Backend مورد نیاز است</span>
+            </div>
+            <p className="text-center text-orange-300/40 text-xs mt-2">
+              برای استفاده از سامانه، Backend را راه‌اندازی کنید
+            </p>
           </div>
-
-
         </div>
 
         {/* Bottom */}

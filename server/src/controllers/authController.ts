@@ -10,6 +10,19 @@ export async function login(req: Request, res: Response) {
   try {
     const { username, password } = req.body;
 
+    // بررسی وضعیت Setup
+    const setupCheck = await query(
+      'SELECT is_active FROM users WHERE username = $1',
+      ['admin']
+    );
+
+    // اگر Admin وجود دارد ولی فعال نیست، سیستم نیاز به Setup دارد
+    if (setupCheck.rows.length > 0 && !setupCheck.rows[0].is_active) {
+      return res.status(403).json({ 
+        error: 'System requires initial setup. Please contact administrator.' 
+      });
+    }
+
     // پیدا کردن کاربر
     const result = await query(
       'SELECT * FROM users WHERE username = $1 AND is_active = TRUE',
@@ -40,7 +53,7 @@ export async function login(req: Request, res: Response) {
       { expiresIn: config.jwt.expiresIn }
     );
 
-    // ثبت در audit log
+    // ثبت در audit log (بدون رمز عبور)
     await query(
       `INSERT INTO audit_logs (user_id, user_name, action, record_type, details)
        VALUES ($1, $2, 'login', 'User', 'User logged in')`,
@@ -69,6 +82,11 @@ export async function changePassword(req: AuthRequest, res: Response) {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user!.id;
 
+    // اعتبارسنجی رمز جدید
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+
     // دریافت کاربر
     const result = await query('SELECT * FROM users WHERE id = $1', [userId]);
     const user = result.rows[0];
@@ -79,8 +97,8 @@ export async function changePassword(req: AuthRequest, res: Response) {
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
 
-    // رمزگذاری رمز جدید
-    const salt = await bcrypt.genSalt(10);
+    // رمزگذاری رمز جدید با bcrypt
+    const salt = await bcrypt.genSalt(12);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
     // به‌روزرسانی رمز
@@ -89,7 +107,7 @@ export async function changePassword(req: AuthRequest, res: Response) {
       [newPasswordHash, userId]
     );
 
-    // ثبت در audit log
+    // ثبت در audit log (بدون رمز عبور)
     await query(
       `INSERT INTO audit_logs (user_id, user_name, action, record_type, details)
        VALUES ($1, $2, 'edit', 'User', 'Password changed')`,
