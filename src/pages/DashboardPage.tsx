@@ -4,10 +4,11 @@ import { useData } from '../contexts/DataContext';
 import { SHIFTS } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area, ScatterChart, Scatter } from 'recharts';
 import JalaliDatePicker from '../components/JalaliDatePicker';
+import BackendError from '../components/BackendError';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { heats } = useData();
+  const { heats, backendError, refreshHeats } = useData();
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
 
@@ -23,6 +24,11 @@ export default function DashboardPage() {
   }, []);
 
   if (!user) return null;
+
+  // نمایش خطای Backend
+  if (backendError) {
+    return <BackendError error={backendError} onRetry={refreshHeats} />;
+  }
 
   if (user.role === 'eaf_user') return <EAFDashboard heats={heats} />;
   if (user.role === 'lf_user') return <LFDashboard heats={heats} />;
